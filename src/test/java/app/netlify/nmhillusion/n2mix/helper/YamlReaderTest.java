@@ -12,7 +12,7 @@ class YamlReaderTest {
     @Test
     void getProperty() {
         assertDoesNotThrow(() -> {
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data-test/vehical.yml")) {
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data-test/vehicle.yml")) {
                 final YamlReader yamlReader = new YamlReader(inputStream);
                 {
                     final Integer carWheel = yamlReader.getProperty("car.wheel", Integer.class);
