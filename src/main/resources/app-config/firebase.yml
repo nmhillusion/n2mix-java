@@ -1,0 +1,7 @@
+config:
+  enable: true
+
+service-account:
+  project-id: nmhillusion-service
+  #    path: ~/.firebase-service-account.json
+  path: D:\\data\\service-acc.json
