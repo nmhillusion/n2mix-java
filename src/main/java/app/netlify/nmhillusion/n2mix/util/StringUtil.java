@@ -19,11 +19,16 @@ import static app.netlify.nmhillusion.n2mix.type.FunctionalFactory.not;
 public abstract class StringUtil {
     public static final String EMPTY = "";
 
-    public static String trimWithNull(@Nullable String input) {
-        if (StringValidator.isBlank(input)) {
-            return "";
+    public static String trimWithNull(@Nullable Object input) {
+        if (null == input) {
+            return EMPTY;
         }
-        return input.trim();
+        final String strInput = String.valueOf(input);
+
+        if (StringValidator.isBlank(strInput)) {
+            return EMPTY;
+        }
+        return strInput.trim();
     }
 
     public static String removeHtmlTag(@Nullable String input) {
