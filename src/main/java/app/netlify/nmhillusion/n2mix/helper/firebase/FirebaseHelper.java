@@ -1,11 +1,12 @@
 package app.netlify.nmhillusion.n2mix.helper.firebase;
 
-import app.netlify.nmhillusion.n2mix.helper.YamlReader;
+import app.netlify.nmhillusion.n2mix.exception.GeneralException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,31 +22,17 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
  * created-by: nmhillusion
  */
 public class FirebaseHelper implements AutoCloseable {
-    private Optional<FirebaseApp> firebaseApp;
+    private final FirebaseConfig firebaseConfig;
+    private final Optional<FirebaseApp> firebaseAppOpt;
 
-    private static <T> T getConfig(String configKey, Class<T> classToCast) throws IOException {
-        try (final InputStream firebaseConfig = FirebaseHelper.class.getClassLoader().getResourceAsStream("app-config/firebase.yml")) {
-            final YamlReader yamlReader = new YamlReader(firebaseConfig);
-            return yamlReader.getProperty(configKey, classToCast);
-        }
-    }
-
-    public static boolean isEnable() {
-        try {
-            return getConfig("config.enable", Boolean.class);
-        } catch (Exception ex) {
-            getLog(FirebaseHelper.class).error(ex);
-            return false;
-        }
-    }
-
-    public Optional<FirebaseHelper> newsInstance() throws IOException {
+    public FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
+        this.firebaseConfig = firebaseConfig;
         if (isEnable()) {
-            final String serviceAccountPath = getConfig("service-account.path", String.class);
-            final String serviceAccountProjectId = getConfig("service-account.project-id", String.class);
+            final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
+            final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
 
-            getLog(this).infoFormat("==> serviceAccountPath = %s", serviceAccountPath);
-            getLog(this).infoFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
+            getLog(this).debugFormat("==> serviceAccountPath = %s", serviceAccountPath);
+            getLog(this).debugFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
 
             getLog(this).info("Initializing Firebase >>");
             try (final InputStream serviceAccInputStream = Files.newInputStream(new File(serviceAccountPath).toPath())) {
@@ -53,19 +40,21 @@ public class FirebaseHelper implements AutoCloseable {
                         .setCredentials(GoogleCredentials.fromStream(serviceAccInputStream))
                         .setProjectId(serviceAccountProjectId)
                         .build();
-                this.firebaseApp = Optional.of(FirebaseApp.initializeApp(options));
-                getLog(this).info("<< Initializing Firebase Success: " + firebaseApp);
-                return Optional.of(this);
+                this.firebaseAppOpt = Optional.of(FirebaseApp.initializeApp(options));
+                getLog(this).info("<< Initializing Firebase Success: " + firebaseAppOpt);
             }
         } else {
-            getLog(this).error("Not enable firebase");
+            throw new GeneralException("Not enable firebase");
         }
-        return Optional.empty();
+    }
+
+    public boolean isEnable() {
+        return firebaseConfig.getEnable();
     }
 
     public Optional<Firestore> getFirestore() throws IOException {
-        if (isEnable() && firebaseApp.isPresent()) {
-            return Optional.of(FirestoreClient.getFirestore(firebaseApp.get()));
+        if (isEnable() && firebaseAppOpt.isPresent()) {
+            return Optional.of(FirestoreClient.getFirestore(firebaseAppOpt.get()));
         }
         return Optional.empty();
     }
@@ -81,6 +70,6 @@ public class FirebaseHelper implements AutoCloseable {
             }
         });
 
-        firebaseApp.ifPresent(FirebaseApp::delete);
+        firebaseAppOpt.ifPresent(FirebaseApp::delete);
     }
 }

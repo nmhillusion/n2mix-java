@@ -8,7 +8,7 @@ import app.netlify.nmhillusion.n2mix.model.ApiErrorResponse;
  * created-by: nmhillusion
  */
 
-public class GeneralException extends RuntimeException {
+public class GeneralException extends Exception {
 
     public GeneralException(String message) {
         super(message);
