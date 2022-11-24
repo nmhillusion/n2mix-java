@@ -9,27 +9,27 @@ import java.util.Calendar;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 
-public class ChubbLogger {
+public class MixLogger {
     private final Logger logger;
     private final Class<?> mClass;
 
-    public ChubbLogger(Logger logger, Class<?> mClass) {
+    public MixLogger(Logger logger, Class<?> mClass) {
         this.logger = logger;
         this.mClass = mClass;
     }
 
     public static void main(String[] args) {
         try {
-            getLog(ChubbLogger.class).infoFormat("test > $data > $value", new ChainMap<String, String>()
+            getLog(MixLogger.class).infoFormat("test > $data > $value", new ChainMap<String, String>()
                     .chainPut("data", "myData")
                     .chainPut("value", "myValue"));
-            getLog(ChubbLogger.class).info("hello world\nabc world");
+            getLog(MixLogger.class).info("hello world\nabc world");
 
             Long.parseLong("g");
             int val = 8 / 0;
             System.out.println("val: " + val);
         } catch (Exception ex) {
-            getLog(ChubbLogger.class).info(ex);
+            getLog(MixLogger.class).info(ex);
         }
     }
 

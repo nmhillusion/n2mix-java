@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class LogHelper {
-    private static final Map<String, ChubbLogger> logFactory = new TreeMap<>();
+    private static final Map<String, MixLogger> logFactory = new TreeMap<>();
 
-    private static ChubbLogger generateLogger(Object object) {
+    private static MixLogger generateLogger(Object object) {
         Class<?> loggerClass = object instanceof Class ? (Class<?>) object : object.getClass();
-        ChubbLogger chubbLogger = new ChubbLogger(LoggerFactory.getLogger(loggerClass), loggerClass);
-        logFactory.put(object.getClass().getName(), chubbLogger);
-        return chubbLogger;
+        MixLogger mixLogger = new MixLogger(LoggerFactory.getLogger(loggerClass), loggerClass);
+        logFactory.put(object.getClass().getName(), mixLogger);
+        return mixLogger;
     }
 
-    public static ChubbLogger getLog(Object object) {
+    public static MixLogger getLog(Object object) {
         String logName = object instanceof Class ? ((Class<?>) object).getName() : object.getClass().getName();
         if (logFactory.containsKey(logName)) {
             return logFactory.get(logName);
