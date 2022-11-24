@@ -6,6 +6,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.cloud.StorageClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -55,6 +56,13 @@ public class FirebaseHelper implements AutoCloseable {
     public Optional<Firestore> getFirestore() throws IOException {
         if (isEnable() && firebaseAppOpt.isPresent()) {
             return Optional.of(FirestoreClient.getFirestore(firebaseAppOpt.get()));
+        }
+        return Optional.empty();
+    }
+
+    public Optional<StorageClient> getStorage() throws IOException {
+        if (isEnable() && firebaseAppOpt.isPresent()) {
+            return Optional.of(StorageClient.getInstance(firebaseAppOpt.get()));
         }
         return Optional.empty();
     }
