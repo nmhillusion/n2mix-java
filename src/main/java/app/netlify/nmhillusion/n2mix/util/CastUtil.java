@@ -24,7 +24,7 @@ public abstract class CastUtil {
             } else if (classToCast.isAssignableFrom(Double.class) || classToCast.isAssignableFrom(double.class)) {
                 result = classToCast.cast(Double.parseDouble(String.valueOf(value)));
             } else if (classToCast.equals(String.class)) {
-                result = classToCast.cast(String.valueOf(value));
+                result = classToCast.cast(StringUtil.trimWithNull(value));
             } else {
                 result = classToCast.cast(value);
             }
