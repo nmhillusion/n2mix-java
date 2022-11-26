@@ -1,5 +1,6 @@
 package app.netlify.nmhillusion.n2mix.helper;
 
+import app.netlify.nmhillusion.n2mix.util.CastUtil;
 import app.netlify.nmhillusion.n2mix.validator.StringValidator;
 import org.yaml.snakeyaml.Yaml;
 
@@ -86,10 +87,7 @@ public class YamlReader {
             factory.put(keyChain, propertyValue);
         }
 
-        if (classToCast.isInstance(propertyValue)) {
-            return classToCast.cast(propertyValue);
-        }
-        return defaultValue;
+        return CastUtil.safeCast(propertyValue, classToCast);
     }
 
     /**
@@ -100,5 +98,14 @@ public class YamlReader {
      */
     public <T> T getProperty(String key, Class<T> classToCast) {
         return getProperty(key, classToCast, null);
+    }
+
+    /**
+     * @param key key of property to obtain from source <br/>
+     *            default <b>@param classToCast = String.class</b>
+     * @return if missing key or cannot cast will return `null`
+     */
+    public String getProperty(String key) {
+        return getProperty(key, String.class);
     }
 }
