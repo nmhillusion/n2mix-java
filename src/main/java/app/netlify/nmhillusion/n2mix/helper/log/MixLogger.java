@@ -69,6 +69,7 @@ public class MixLogger {
 
             /// Mark: Format with %
             String textPattern = String.valueOf(formatData);
+            /// TODO: 2022-11-27 check for log string with very big log text 
             textPattern = textPattern.replaceAll("%([^abcdefghnostx]+)", "%%$1");
             try {
                 formattedData = String.format(textPattern, params);
