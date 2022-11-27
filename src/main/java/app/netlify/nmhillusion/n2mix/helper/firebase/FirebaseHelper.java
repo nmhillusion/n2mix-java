@@ -31,7 +31,13 @@ public class FirebaseHelper implements AutoCloseable {
     public FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
         this.firebaseConfig = firebaseConfig;
         if (isEnable()) {
-            getLog(this).info("current using firebase: " + usingCount.incrementAndGet());
+            final int currentUsingFirebaseApp = usingCount.incrementAndGet();
+            getLog(this).info("current using firebase: " + currentUsingFirebaseApp);
+
+            if (0 < currentUsingFirebaseApp) {
+                this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
+                return;
+            }
 
             final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
             final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
