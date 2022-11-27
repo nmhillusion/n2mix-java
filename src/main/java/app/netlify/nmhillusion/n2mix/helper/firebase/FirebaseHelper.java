@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 
@@ -23,12 +24,15 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
  * created-by: nmhillusion
  */
 public class FirebaseHelper implements AutoCloseable {
+    private static final AtomicInteger usingCount = new AtomicInteger();
     private final FirebaseConfig firebaseConfig;
     private final Optional<FirebaseApp> firebaseAppOpt;
 
     public FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
         this.firebaseConfig = firebaseConfig;
         if (isEnable()) {
+            getLog(this).info("current using firebase: " + usingCount.incrementAndGet());
+
             final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
             final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
 
@@ -69,15 +73,22 @@ public class FirebaseHelper implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        getFirestore().ifPresent(_firestore -> {
-            try {
-                _firestore.close();
-                _firestore.shutdown();
-            } catch (Throwable ex) {
-                getLog(this).error(ex);
-            }
-        });
+        final int currentUsingFirebase = usingCount.decrementAndGet();
+        getLog(this).info("current using firebase: " + currentUsingFirebase);
 
-        firebaseAppOpt.ifPresent(FirebaseApp::delete);
+        if (0 == currentUsingFirebase) {
+            getFirestore().ifPresent(_firestore -> {
+                try {
+                    _firestore.close();
+                    _firestore.shutdown();
+                } catch (Throwable ex) {
+                    getLog(this).error(ex);
+                }
+            });
+
+            firebaseAppOpt.ifPresent(FirebaseApp::delete);
+        } else {
+            getLog(this).warn("Not close firebase app because of having using app");
+        }
     }
 }
