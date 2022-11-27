@@ -2,17 +2,24 @@ package app.netlify.nmhillusion.n2mix.helper.http;
 
 import app.netlify.nmhillusion.n2mix.exception.ApiResponseException;
 import app.netlify.nmhillusion.n2mix.model.ApiErrorResponse;
+import app.netlify.nmhillusion.n2mix.validator.StringValidator;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.json.JSONObject;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 import javax.net.ssl.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
@@ -20,7 +27,12 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 public class HttpHelper {
     private static final Duration defaultTimeout = Duration.ofSeconds(60_000);
     private static final OkHttpClient __client = getDefaultOkHttpClient();
+    private static final List<X509Certificate> ACCEPTED_UNSAFE_CERTIFICATE_LIST = new ArrayList<>();
     private static final OkHttpClient __unsafeClient = getUnsafeOkHttpClient();
+
+    public static void addAcceptedUnsafeCertificate(X509Certificate certificate) {
+        ACCEPTED_UNSAFE_CERTIFICATE_LIST.add(certificate);
+    }
 
     public static String buildParamsStringFromMap(Map<String, String> params) {
         String data = "";
@@ -55,19 +67,34 @@ public class HttpHelper {
             // Create a trust manager that does not validate certificate chains
             final TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
+                        private void throwIfInvalidCertificateOfException(X509Certificate[] chain) throws CertificateException {
+                            if (
+                                    Arrays.stream(chain)
+                                            .noneMatch(it ->
+                                                    ACCEPTED_UNSAFE_CERTIFICATE_LIST.stream()
+                                                            .anyMatch(accIt -> accIt.getIssuerX500Principal().equals(it.getIssuerX500Principal()))
+                                            )
+                                            && !ACCEPTED_UNSAFE_CERTIFICATE_LIST.isEmpty()
+                            ) {
+                                throw new CertificateException("This certificate is not invalid: " + Arrays.toString(chain));
+                            }
+                        }
+
                         @Override
                         public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
                                 throws CertificateException {
+                            throwIfInvalidCertificateOfException(chain);
                         }
 
                         @Override
                         public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
                                 throws CertificateException {
+                            throwIfInvalidCertificateOfException(chain);
                         }
 
                         @Override
                         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new java.security.cert.X509Certificate[]{};
+                            return ACCEPTED_UNSAFE_CERTIFICATE_LIST.toArray(new X509Certificate[0]);
                         }
                     }
             };
@@ -105,41 +132,7 @@ public class HttpHelper {
     }
 
     public byte[] post(RequestHttpBuilder httpBuilder, boolean trustAllCertificates) throws Exception {
-        OkHttpClient client;
-        if (!trustAllCertificates) {
-            client = __client;
-        } else {
-            client = __unsafeClient;
-        }
-
-        try (Response response = client.newCall(httpBuilder.buildPost()).execute()) {
-            ResponseBody responseBody = response.body();
-            if (null == responseBody) {
-                throw new ApiResponseException(
-                        new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Lỗi trao đổi dữ liệu server",
-                                "Trao đổi dữ liệu giữa các server không thành công, vui lòng thử lại!"));
-            } else if (response.isSuccessful()) {
-                return responseBody.bytes();
-            } else {
-                String rawResponse = responseBody.string();
-                getLog(HttpHelper.class).debug("rawResponse: " + rawResponse);
-                if (!rawResponse.isEmpty()) {
-                    JSONObject errorBody = new JSONObject(rawResponse);
-                    throw new ApiResponseException(
-                            new ApiErrorResponse(
-                                    HttpStatus.valueOf(errorBody.getInt("status")),
-                                    errorBody.getString("error"),
-                                    errorBody.getString("message")));
-                } else {
-                    throw new ApiResponseException(
-                            new ApiErrorResponse(
-                                    HttpStatus.valueOf(response.code()),
-                                    response.message(),
-                                    response.message()));
-                }
-            }
-        }
+        return httpExecute(httpBuilder, HttpMethod.POST, trustAllCertificates);
     }
 
     public byte[] get(RequestHttpBuilder httpBuilder) throws Exception {
@@ -147,6 +140,25 @@ public class HttpHelper {
     }
 
     public byte[] get(RequestHttpBuilder httpBuilder, boolean trustAllCertificates) throws Exception {
+        return httpExecute(httpBuilder, HttpMethod.GET, trustAllCertificates);
+    }
+
+    private Request buildRequestFromMethod(HttpMethod httpMethod, RequestHttpBuilder requestHttpBuilder) {
+        Request okRequest = null;
+
+        switch (httpMethod) {
+            case GET:
+                okRequest = requestHttpBuilder.buildGet();
+                break;
+            case POST:
+                okRequest = requestHttpBuilder.buildPost();
+                break;
+        }
+
+        return okRequest;
+    }
+
+    public byte[] httpExecute(RequestHttpBuilder httpBuilder, HttpMethod httpMethod, boolean trustAllCertificates) throws Exception {
         OkHttpClient client;
         if (!trustAllCertificates) {
             client = __client;
@@ -154,31 +166,31 @@ public class HttpHelper {
             client = __unsafeClient;
         }
 
-        try (Response response = client.newCall(httpBuilder.buildGet()).execute()) {
+        try (Response response = client.newCall(buildRequestFromMethod(httpMethod, httpBuilder)).execute()) {
             ResponseBody responseBody = response.body();
             if (null == responseBody) {
                 throw new ApiResponseException(
                         new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Lỗi trao đổi dữ liệu server",
-                                "Trao đổi dữ liệu giữa các server không thành công, vui lòng thử lại!"));
+                                "Internal Server Error",
+                                httpBuilder.getUrl() + ", method: " + httpMethod + ", responseBody is null"));
             } else if (response.isSuccessful()) {
                 return responseBody.bytes();
             } else {
                 String rawResponse = responseBody.string();
-                getLog(HttpHelper.class).debug("rawResponse: " + rawResponse);
-                if (!rawResponse.isEmpty()) {
+                getLog(this).debug(httpBuilder.getUrl() + " -> rawResponse: " + rawResponse);
+                if (!StringValidator.isBlank(rawResponse)) {
                     JSONObject errorBody = new JSONObject(rawResponse);
                     throw new ApiResponseException(
                             new ApiErrorResponse(
                                     HttpStatus.valueOf(errorBody.getInt("status")),
                                     errorBody.getString("error"),
-                                    errorBody.getString("message")));
+                                    httpBuilder.getUrl() + ", method: " + httpMethod + "," + errorBody.getString("message")));
                 } else {
                     throw new ApiResponseException(
                             new ApiErrorResponse(
                                     HttpStatus.valueOf(response.code()),
                                     response.message(),
-                                    response.message()));
+                                    httpBuilder.getUrl() + ", method: " + httpMethod + "," + response.message()));
                 }
             }
         }

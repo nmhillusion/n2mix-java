@@ -29,6 +29,10 @@ public class RequestHttpBuilder {
         requestBuilder = new Request.Builder();
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public RequestHttpBuilder addParam(String key, String value) {
         params.put(key, value);
         return this;

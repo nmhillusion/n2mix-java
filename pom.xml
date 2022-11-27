@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>app.netlify.nmhillusion</groupId>
     <artifactId>n2mix</artifactId>
-    <version>2022.11.26.2</version>
+    <version>2022.11.27.1</version>
     <name>n2mix</name>
     <description>n2mix package</description>
     <properties>
