@@ -34,7 +34,7 @@ public class FirebaseHelper implements AutoCloseable {
             final int currentUsingFirebaseApp = usingCount.incrementAndGet();
             getLog(this).info("current using firebase: " + currentUsingFirebaseApp);
 
-            if (0 < currentUsingFirebaseApp) {
+            if (1 < currentUsingFirebaseApp) {
                 this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
                 return;
             }
