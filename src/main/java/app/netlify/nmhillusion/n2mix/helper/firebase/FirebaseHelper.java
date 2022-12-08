@@ -23,13 +23,13 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
  * <p>
  * created-by: nmhillusion
  */
-public class FirebaseHelper implements AutoCloseable {
+class FirebaseHelper implements AutoCloseable {
     private static final int MAX_WAITING_TIME = 60_000;
     private static volatile boolean isUsing = false;
     private final FirebaseConfig firebaseConfig;
     private Optional<FirebaseApp> firebaseAppOpt;
 
-    public FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
+    FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
         this.firebaseConfig = firebaseConfig;
         if (isEnable()) {
             long startTime = System.currentTimeMillis();
@@ -40,6 +40,7 @@ public class FirebaseHelper implements AutoCloseable {
             if (isUsing) {
                 throw new GeneralException("Timeout for waiting another using of firebase app");
             }
+            isUsing = true;
 
             initializeFirebase();
         } else {
