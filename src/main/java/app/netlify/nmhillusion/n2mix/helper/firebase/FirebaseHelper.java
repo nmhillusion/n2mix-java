@@ -23,7 +23,7 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
  * <p>
  * created-by: nmhillusion
  */
-class FirebaseHelper implements AutoCloseable {
+public class FirebaseHelper implements AutoCloseable {
     private static final int MAX_WAITING_TIME = 60_000;
     private static volatile boolean isUsing = false;
     private final FirebaseConfig firebaseConfig;
