@@ -1,6 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.firebase;
 
 import app.netlify.nmhillusion.n2mix.exception.GeneralException;
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
@@ -40,17 +41,22 @@ public class FirebaseHelper implements AutoCloseable {
                 throw new GeneralException("Timeout for waiting another using of firebase app");
             }
 
-            try {
-                this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
-            } catch (IllegalStateException ex) {
-                initFirebase();
-            }
+            initializeFirebase();
         } else {
             throw new GeneralException("Not enable firebase");
         }
     }
 
-    private void initFirebase() throws IOException {
+    private synchronized void instanceFirebase() throws IOException {
+        try {
+            this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
+        } catch (IllegalStateException ex) {
+            LogHelper.getLog(this).error("Cannot get instance of firebase: IllegalStateException : " + ex.getMessage());
+            initializeFirebase();
+        }
+    }
+
+    private synchronized void initializeFirebase() throws IOException {
         final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
         final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
 
