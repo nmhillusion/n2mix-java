@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 
@@ -24,38 +23,50 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
  * created-by: nmhillusion
  */
 public class FirebaseHelper implements AutoCloseable {
-    private static final AtomicInteger usingCount = new AtomicInteger();
+    private static final int MAX_WAITING_TIME = 60_000;
+    private static volatile boolean isUsing = false;
     private final FirebaseConfig firebaseConfig;
-    private final Optional<FirebaseApp> firebaseAppOpt;
+    private Optional<FirebaseApp> firebaseAppOpt;
 
     public FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
         this.firebaseConfig = firebaseConfig;
         if (isEnable()) {
-            final int currentUsingFirebaseApp = usingCount.incrementAndGet();
-            getLog(this).info("current using firebase: " + currentUsingFirebaseApp);
-
-            if (1 < currentUsingFirebaseApp) {
-                this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
-                return;
+            long startTime = System.currentTimeMillis();
+            while (isUsing && MAX_WAITING_TIME > System.currentTimeMillis() - startTime) {
+                // waiting for another using of firebase
             }
 
-            final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
-            final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
+            if (isUsing) {
+                throw new GeneralException("Timeout for waiting another using of firebase app");
+            }
 
-            getLog(this).debugFormat("==> serviceAccountPath = %s", serviceAccountPath);
-            getLog(this).debugFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
-
-            getLog(this).info("Initializing Firebase >>");
-            try (final InputStream serviceAccInputStream = Files.newInputStream(new File(serviceAccountPath).toPath())) {
-                final FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccInputStream))
-                        .setProjectId(serviceAccountProjectId)
-                        .build();
-                this.firebaseAppOpt = Optional.of(FirebaseApp.initializeApp(options));
-                getLog(this).info("<< Initializing Firebase Success: " + firebaseAppOpt);
+            try {
+                this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
+            } catch (IllegalStateException ex) {
+                initFirebase();
             }
         } else {
             throw new GeneralException("Not enable firebase");
+        }
+    }
+
+    private void initFirebase() throws IOException {
+        final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
+        final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
+
+        getLog(this).debugFormat("==> serviceAccountPath = %s", serviceAccountPath);
+        getLog(this).debugFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
+
+        getLog(this).info("Initializing Firebase >>");
+        try (final InputStream serviceAccInputStream = Files.newInputStream(new File(serviceAccountPath).toPath())) {
+            final FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccInputStream))
+                    .setProjectId(serviceAccountProjectId)
+                    .setConnectTimeout(60_000)
+                    .setReadTimeout(60_000)
+                    .build();
+            this.firebaseAppOpt = Optional.of(FirebaseApp.initializeApp(options));
+            getLog(this).info("<< Initializing Firebase Success: " + firebaseAppOpt);
         }
     }
 
@@ -79,22 +90,18 @@ public class FirebaseHelper implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        final int currentUsingFirebase = usingCount.decrementAndGet();
-        getLog(this).info("current using firebase: " + currentUsingFirebase);
+        getFirestore().ifPresent(_firestore -> {
+            try {
+                _firestore.close();
+                _firestore.shutdown();
+            } catch (Throwable ex) {
+                getLog(this).error(ex);
+            }
+        });
 
-        if (0 == currentUsingFirebase) {
-            getFirestore().ifPresent(_firestore -> {
-                try {
-                    _firestore.close();
-                    _firestore.shutdown();
-                } catch (Throwable ex) {
-                    getLog(this).error(ex);
-                }
-            });
+        firebaseAppOpt.ifPresent(FirebaseApp::delete);
 
-            firebaseAppOpt.ifPresent(FirebaseApp::delete);
-        } else {
-            getLog(this).warn("Not close firebase app because of having using app");
-        }
+        isUsing = false;
+        getLog(this).info("close FirebaseApp");
     }
 }
