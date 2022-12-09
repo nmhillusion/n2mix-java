@@ -1,7 +1,6 @@
 package app.netlify.nmhillusion.n2mix.helper.firebase;
 
 import app.netlify.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
-import org.springframework.stereotype.Component;
 
 /**
  * date: 2022-12-09
@@ -9,9 +8,16 @@ import org.springframework.stereotype.Component;
  * created-by: nmhillusion
  */
 
-@Component
 public class FirebaseWrapper {
+    private static final FirebaseWrapper instance = new FirebaseWrapper();
     private FirebaseConfig firebaseConfig;
+
+    private FirebaseWrapper() {
+    }
+
+    public static FirebaseWrapper getInstance() {
+        return instance;
+    }
 
     public FirebaseWrapper setFirebaseConfig(FirebaseConfig firebaseConfig) {
         this.firebaseConfig = firebaseConfig;

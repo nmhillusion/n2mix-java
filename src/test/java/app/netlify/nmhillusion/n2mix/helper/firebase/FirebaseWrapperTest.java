@@ -24,7 +24,7 @@ class FirebaseWrapperTest {
     @Test
     void runWithWrapper() {
         assertDoesNotThrow(() -> {
-            FirebaseWrapper firebaseWrapper = new FirebaseWrapper();
+            FirebaseWrapper firebaseWrapper = FirebaseWrapper.getInstance();
             final String credentialFilePath = getFirebaseConfig("service-account.path");
 
             if (!new File(credentialFilePath).exists()) {
