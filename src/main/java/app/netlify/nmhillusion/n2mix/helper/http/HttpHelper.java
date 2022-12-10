@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 public class HttpHelper {
     private static final Duration defaultTimeout = Duration.ofSeconds(60_000);
@@ -140,19 +142,16 @@ public class HttpHelper {
     }
 
     public byte[] get(RequestHttpBuilder httpBuilder, boolean trustAllCertificates) throws Exception {
-        return httpExecute(httpBuilder, HttpMethod.GET, trustAllCertificates);
+        return httpExecute(httpBuilder, GET, trustAllCertificates);
     }
 
     private Request buildRequestFromMethod(HttpMethod httpMethod, RequestHttpBuilder requestHttpBuilder) {
         Request okRequest = null;
 
-        switch (httpMethod) {
-            case GET:
-                okRequest = requestHttpBuilder.buildGet();
-                break;
-            case POST:
-                okRequest = requestHttpBuilder.buildPost();
-                break;
+        if (httpMethod.equals(GET)) {
+            okRequest = requestHttpBuilder.buildGet();
+        } else if (httpMethod.equals(POST)) {
+            okRequest = requestHttpBuilder.buildPost();
         }
 
         return okRequest;

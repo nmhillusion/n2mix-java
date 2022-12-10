@@ -48,7 +48,7 @@ class NumberUtilTest {
     void isFloat() {
         assertTrue(NumberUtil.isFloat(12.7f));
         assertTrue(NumberUtil.isFloat("8.0"));
-        assertTrue(NumberUtil.isFloat(new Float("0.9")));
+        assertTrue(NumberUtil.isFloat(Float.parseFloat("0.9")));
 
         assertFalse(NumberUtil.isFloat(null));
         assertFalse(NumberUtil.isFloat(new Object()));
@@ -58,7 +58,7 @@ class NumberUtilTest {
     void isDouble() {
         assertTrue(NumberUtil.isDouble(1288888888888888888888.7));
         assertTrue(NumberUtil.isDouble("800102304043.01"));
-        assertTrue(NumberUtil.isDouble(new Float("0.9")));
+        assertTrue(NumberUtil.isDouble(Float.parseFloat("0.9")));
 
         assertFalse(NumberUtil.isDouble(null));
         assertFalse(NumberUtil.isDouble(new Object()));
