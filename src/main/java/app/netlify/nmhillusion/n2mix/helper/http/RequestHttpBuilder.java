@@ -1,6 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.http;
 
 import app.netlify.nmhillusion.n2mix.constant.OkHttpContentType;
+import app.netlify.nmhillusion.n2mix.validator.StringValidator;
 import okhttp3.Headers;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
@@ -31,6 +32,11 @@ public class RequestHttpBuilder {
 
     public String getUrl() {
         return url;
+    }
+
+    public RequestHttpBuilder setUrl(String url) {
+        this.url = url;
+        return this;
     }
 
     public RequestHttpBuilder addParam(String key, String value) {
@@ -68,15 +74,12 @@ public class RequestHttpBuilder {
         return this;
     }
 
-    public RequestHttpBuilder setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
     private void combinedUrlAndBody() {
         if (!X_WWW_FORM_URLENCODED.equals(mediaType)) {
             String paramsString = HttpHelper.buildParamsStringFromMap(params);
-            url += "?" + paramsString;
+            if (!StringValidator.isBlank(paramsString)) {
+                url += "?" + paramsString;
+            }
         } else {
             requestBodyData.putAll(params);
         }

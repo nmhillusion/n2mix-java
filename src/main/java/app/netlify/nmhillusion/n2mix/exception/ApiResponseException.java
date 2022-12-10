@@ -17,7 +17,7 @@ public class ApiResponseException extends RuntimeException {
     }
 
     public ApiResponseException(ApiErrorResponse errorResponse) {
-        super(errorResponse.getErrorName());
+        super(errorResponse.toString());
         this.errorResponse = errorResponse;
     }
 

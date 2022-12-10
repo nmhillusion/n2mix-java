@@ -12,8 +12,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 import javax.net.ssl.*;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -40,13 +40,9 @@ public class HttpHelper {
         String data = "";
         StringBuilder stringBuilder = new StringBuilder();
         params.forEach((key, value) -> {
-            try {
-                String strValue = String.valueOf(value);
-                String encodedValue = null == value ? "" : URLEncoder.encode(strValue, "UTF-8");
-                stringBuilder.append(key).append("=").append(encodedValue).append("&");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            String strValue = String.valueOf(value);
+            String encodedValue = null == value ? "" : URLEncoder.encode(strValue, StandardCharsets.UTF_8);
+            stringBuilder.append(key).append("=").append(encodedValue).append("&");
         });
 
         if (0 < stringBuilder.length()) {
@@ -176,20 +172,20 @@ public class HttpHelper {
                 return responseBody.bytes();
             } else {
                 String rawResponse = responseBody.string();
-                getLog(this).debug(httpBuilder.getUrl() + " -> rawResponse: " + rawResponse);
+                getLog(this).debug(httpBuilder.getUrl() + " -> rawResponse: " + rawResponse + "; httpResponse: " + response);
                 if (!StringValidator.isBlank(rawResponse)) {
                     JSONObject errorBody = new JSONObject(rawResponse);
                     throw new ApiResponseException(
                             new ApiErrorResponse(
                                     HttpStatus.valueOf(errorBody.getInt("status")),
                                     errorBody.getString("error"),
-                                    httpBuilder.getUrl() + ", method: " + httpMethod + "," + errorBody.getString("message")));
+                                    httpBuilder.getUrl() + ", method: " + httpMethod + ",code: " + response.code() + "," + errorBody.getString("message")));
                 } else {
                     throw new ApiResponseException(
                             new ApiErrorResponse(
                                     HttpStatus.valueOf(response.code()),
                                     response.message(),
-                                    httpBuilder.getUrl() + ", method: " + httpMethod + "," + response.message()));
+                                    httpBuilder.getUrl() + ", method: " + httpMethod + ",code: " + response.code() + "," + response.message()));
                 }
             }
         }
