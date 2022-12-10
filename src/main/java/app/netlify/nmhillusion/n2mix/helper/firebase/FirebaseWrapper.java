@@ -10,7 +10,7 @@ import app.netlify.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 
 public class FirebaseWrapper {
     private static final FirebaseWrapper instance = new FirebaseWrapper();
-    private FirebaseConfig firebaseConfig;
+    private static FirebaseConfig firebaseConfig;
 
     private FirebaseWrapper() {
     }
@@ -19,17 +19,16 @@ public class FirebaseWrapper {
         return instance;
     }
 
-    public FirebaseWrapper setFirebaseConfig(FirebaseConfig firebaseConfig) {
-        this.firebaseConfig = firebaseConfig;
-        return this;
+    public static void setFirebaseConfig(FirebaseConfig firebaseConfig) {
+        FirebaseWrapper.firebaseConfig = firebaseConfig;
     }
 
-    public void runWithWrapper(ThrowableVoidFunction<FirebaseHelper> funcWithFirebase) throws Throwable {
+    public synchronized void runWithWrapper(ThrowableVoidFunction<FirebaseHelper> funcWithFirebase) throws Throwable {
         if (null == firebaseConfig) {
             throw new IllegalArgumentException("Missing firebaseConfig value");
         }
 
-        try (FirebaseHelper firebaseHelper = new FirebaseHelper(this.firebaseConfig)) {
+        try (FirebaseHelper firebaseHelper = new FirebaseHelper(firebaseConfig)) {
             if (!firebaseHelper.isEnable()) {
                 return;
             }
