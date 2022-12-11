@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class FirebaseWrapperTest {
     private static boolean ableToTest = true;
@@ -48,11 +49,9 @@ class FirebaseWrapperTest {
 
     @Test
     void runWithWrapper() {
-        assertDoesNotThrow(() -> {
-            if (!ableToTest) {
-                return;
-            }
+        assumeTrue(ableToTest);
 
+        assertDoesNotThrow(() -> {
             FirebaseWrapper firebaseWrapper = FirebaseWrapper.getInstance();
 
             firebaseWrapper.runWithWrapper(firebaseHelper -> {
@@ -70,6 +69,8 @@ class FirebaseWrapperTest {
 
     @Test
     void runWithWrapperInThreads() {
+        assumeTrue(ableToTest);
+
         assertDoesNotThrow(() -> {
             final List<Thread> threadList = new ArrayList<>();
             for (int thIdx = 0; thIdx < 10; thIdx++) {
