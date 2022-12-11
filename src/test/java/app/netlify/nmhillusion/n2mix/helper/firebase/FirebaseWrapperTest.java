@@ -1,6 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.firebase;
 
 import app.netlify.nmhillusion.n2mix.helper.YamlReader;
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
@@ -47,6 +50,7 @@ class FirebaseWrapperTest {
             FirebaseWrapper firebaseWrapper = FirebaseWrapper.getInstance();
 
             firebaseWrapper.runWithWrapper(firebaseHelper -> {
+                LogHelper.getLog(this).info("running in wrapper: " + Thread.currentThread().getName());
                 final Optional<Firestore> firestore = firebaseHelper.getFirestore();
                 if (firestore.isPresent()) {
                     final Iterable<CollectionReference> collectionReferences = firestore.get().listCollections();
@@ -56,5 +60,24 @@ class FirebaseWrapperTest {
                 }
             });
         }, "run firebase app with wrapper");
+    }
+
+    @Test
+    void runWithWrapperInThreads() {
+        assertDoesNotThrow(() -> {
+            final List<Thread> threadList = new ArrayList<>();
+            for (int thIdx = 0; thIdx < 10; thIdx++) {
+                threadList.add(new Thread(this::runWithWrapper, "Thread FB #" + thIdx));
+            }
+
+            for (Thread th : threadList) {
+                th.start();
+            }
+
+            for (Thread th : threadList) {
+                th.join();
+            }
+
+        }, "run firebase app with wrapper in threads");
     }
 }

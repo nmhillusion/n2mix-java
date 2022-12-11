@@ -27,7 +27,7 @@ public class FirebaseHelper implements AutoCloseable {
     private static final int MAX_WAITING_TIME = 60_000;
     private static volatile boolean isUsing = false;
     private final FirebaseConfig firebaseConfig;
-    private Optional<FirebaseApp> firebaseAppOpt;
+    private FirebaseApp firebaseApp = null;
 
     FirebaseHelper(@NotNull FirebaseConfig firebaseConfig) throws IOException, GeneralException {
         this.firebaseConfig = firebaseConfig;
@@ -50,7 +50,7 @@ public class FirebaseHelper implements AutoCloseable {
 
     private synchronized void instanceFirebase() throws IOException {
         try {
-            this.firebaseAppOpt = Optional.of(FirebaseApp.getInstance());
+            this.firebaseApp = FirebaseApp.getInstance();
         } catch (IllegalStateException ex) {
             LogHelper.getLog(this).error("Cannot get instance of firebase: IllegalStateException : " + ex.getMessage());
             initializeFirebase();
@@ -72,8 +72,8 @@ public class FirebaseHelper implements AutoCloseable {
                     .setConnectTimeout(60_000)
                     .setReadTimeout(60_000)
                     .build();
-            this.firebaseAppOpt = Optional.of(FirebaseApp.initializeApp(options));
-            getLog(this).info("<< Initializing Firebase Success: " + firebaseAppOpt);
+            this.firebaseApp = FirebaseApp.initializeApp(options);
+            getLog(this).info("<< Initializing Firebase Success: " + firebaseApp);
         }
     }
 
@@ -82,15 +82,15 @@ public class FirebaseHelper implements AutoCloseable {
     }
 
     public Optional<Firestore> getFirestore() throws IOException {
-        if (isEnable() && firebaseAppOpt.isPresent()) {
-            return Optional.of(FirestoreClient.getFirestore(firebaseAppOpt.get()));
+        if (isEnable() && null != firebaseApp) {
+            return Optional.of(FirestoreClient.getFirestore(firebaseApp));
         }
         return Optional.empty();
     }
 
     public Optional<StorageClient> getStorage() throws IOException {
-        if (isEnable() && firebaseAppOpt.isPresent()) {
-            return Optional.of(StorageClient.getInstance(firebaseAppOpt.get()));
+        if (isEnable() && null != firebaseApp) {
+            return Optional.of(StorageClient.getInstance(firebaseApp));
         }
         return Optional.empty();
     }
@@ -106,7 +106,9 @@ public class FirebaseHelper implements AutoCloseable {
             }
         });
 
-        firebaseAppOpt.ifPresent(FirebaseApp::delete);
+        if (null != firebaseApp) {
+            firebaseApp.delete();
+        }
 
         isUsing = false;
         getLog(this).info("close FirebaseApp");
