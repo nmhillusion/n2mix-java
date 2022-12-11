@@ -18,6 +18,7 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class FirebaseWrapperTest {
+    private static boolean ableToTest = true;
 
     private static String getFirebaseConfig(String key) throws IOException {
         try (final InputStream resourceAsStream = FirebaseWrapperTest.class.getClassLoader().getResourceAsStream("app-config/firebase.yml")) {
@@ -32,6 +33,7 @@ class FirebaseWrapperTest {
 
         if (!new File(credentialFilePath).exists()) {
             getLog(FirebaseWrapperTest.class).warn("Don't run this test because this environment does not have firebase service-account.path");
+            ableToTest = false;
             return;
         }
 
@@ -47,6 +49,10 @@ class FirebaseWrapperTest {
     @Test
     void runWithWrapper() {
         assertDoesNotThrow(() -> {
+            if (!ableToTest) {
+                return;
+            }
+
             FirebaseWrapper firebaseWrapper = FirebaseWrapper.getInstance();
 
             firebaseWrapper.runWithWrapper(firebaseHelper -> {
