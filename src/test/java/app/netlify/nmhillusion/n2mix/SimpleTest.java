@@ -17,7 +17,7 @@ public class SimpleTest {
     @Test
     void testDateTimeFormatter() {
         final String formattedDateTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
-        LogHelper.getLog(this).info("formattedDateTime -> " + formattedDateTime);
+        LogHelper.getLog(this, true).info("formattedDateTime -> " + formattedDateTime);
         Assertions.assertNotNull(formattedDateTime);
         Assertions.assertTrue(0 < formattedDateTime.trim().length());
 
