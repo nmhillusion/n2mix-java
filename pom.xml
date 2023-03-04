@@ -103,7 +103,7 @@
         <dependency>
             <groupId>com.github.nmhillusion</groupId>
             <artifactId>pi-logger</artifactId>
-            <version>2023.2.27</version>
+            <version>2023.3.1</version>
         </dependency>
 
         <dependency>

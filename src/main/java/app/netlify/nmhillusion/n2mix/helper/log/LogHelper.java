@@ -3,7 +3,6 @@ package app.netlify.nmhillusion.n2mix.helper.log;
 import app.netlify.nmhillusion.pi_logger.PiLogger;
 import app.netlify.nmhillusion.pi_logger.PiLoggerFactory;
 import app.netlify.nmhillusion.pi_logger.constant.LogLevel;
-import app.netlify.nmhillusion.pi_logger.model.LogConfigModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
@@ -13,16 +12,20 @@ import java.util.TreeMap;
 
 public class LogHelper {
     private static final Map<String, MixLogger> logFactory = new TreeMap<>();
+    private static boolean usePiLogger = true;
 
     static {
-        PiLoggerFactory.setDefaultLogConfig(
-                new LogConfigModel()
-                        .setColoring(true)
-                        .setDisplayLineNumber(true)
-                        .setLogLevel(LogLevel.DEBUG)
-                        .setOutputToFile(false)
-                        .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
-        );
+        PiLoggerFactory.getDefaultLogConfig()
+                .setColoring(true)
+                .setDisplayLineNumber(true)
+                .setLogLevel(LogLevel.DEBUG)
+                .setIsOutputToFile(false)
+                .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
+        ;
+    }
+
+    public static void setUsePiLogger(boolean usePiLogger) {
+        LogHelper.usePiLogger = usePiLogger;
     }
 
     private static PiLogger defaultLogger(Object object_) {
@@ -48,7 +51,7 @@ public class LogHelper {
     }
 
     public static MixLogger getLog(Object object_) {
-        return getLog(object_, false);
+        return getLog(object_, usePiLogger);
     }
 
     public static MixLogger getLog(Object object_, boolean usePiLogger) {

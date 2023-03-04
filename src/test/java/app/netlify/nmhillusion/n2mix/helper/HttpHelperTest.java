@@ -27,7 +27,7 @@ class HttpHelperTest {
     @Test
     void post() {
         assertDoesNotThrow(() -> {
-            System.out.println("start post data");
+            getLog(this).info("start post data");
 
             final byte[] binPostData = httpHelper.post(new RequestHttpBuilder()
                     .setUrl("https://httpbin.org/post")
@@ -39,7 +39,7 @@ class HttpHelperTest {
                             OkHttpContentType.JSON)
             );
 
-            System.out.println("binPostData: " + new String(binPostData));
+            getLog(this).info("binPostData: " + new String(binPostData));
         });
     }
 }
