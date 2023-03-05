@@ -32,24 +32,28 @@ public class ExcelDataSheet {
         return this;
     }
 
+    private CellStyle createHeaderCellStyle(Workbook workbook) {
+        final CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.BLACK.getIndex());
+        headerStyle.setFillPattern(FillPatternType.NO_FILL);
+
+        final XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName(FONT_FAMILY);
+        font.setFontHeightInPoints(FONT_SIZE);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
+        return headerStyle;
+    }
+
     public void addHeaders(Workbook workbook, Sheet sheet) {
         if (!CollectionUtil.isNullOrEmpty(excelDataModel.getHeaders())) {
-            final CellStyle headerStyle = workbook.createCellStyle();
-            headerStyle.setFillForegroundColor(IndexedColors.BLACK.getIndex());
-            headerStyle.setFillPattern(FillPatternType.NO_FILL);
-
-            final XSSFFont font = ((XSSFWorkbook) workbook).createFont();
-            font.setFontName(FONT_FAMILY);
-            font.setFontHeightInPoints(FONT_SIZE);
-            font.setBold(true);
-            headerStyle.setFont(font);
-
             for (List<String> headerData : excelDataModel.getHeaders()) {
                 if (!CollectionUtil.isNullOrEmpty(headerData)) {
                     final Row header = sheet.createRow(mainRowIndex++);
                     for (String headerCellData : headerData) {
                         final Cell headerCell = header.createCell(Math.max(0, header.getLastCellNum()));
-                        headerCell.setCellStyle(headerStyle);
+                        headerCell.setCellStyle(createHeaderCellStyle(workbook));
                         headerCell.setCellValue(headerCellData);
                     }
                 }
@@ -84,8 +88,7 @@ public class ExcelDataSheet {
                     final Row row = sheet.createRow(mainRowIndex++);
                     for (String cellData : rowData) {
                         final Cell cell = row.createCell(Math.max(0, row.getLastCellNum()));
-                        cell.setCellStyle(createCellStyle(workbook, cellData));
-
+//                        cell.setCellStyle(createCellStyle(workbook, cellData));
                         cell.setCellValue(cellData);
                     }
                 }
