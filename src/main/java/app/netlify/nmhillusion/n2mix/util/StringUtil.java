@@ -28,7 +28,9 @@ public abstract class StringUtil {
         if (StringValidator.isBlank(strInput)) {
             return EMPTY;
         }
-        return strInput.trim();
+        return strInput
+                .trim()
+                ;
     }
 
     public static String removeHtmlTag(@Nullable String input) {
