@@ -15,6 +15,7 @@
 #  limitations under the License.
 #
 
+name: Dependapot
 version: 2
 updates:
   - package-ecosystem: maven
