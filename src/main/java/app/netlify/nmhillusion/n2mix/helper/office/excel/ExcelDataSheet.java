@@ -1,5 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.office.excel;
 
+import app.netlify.nmhillusion.n2mix.exception.MissingDataException;
+import app.netlify.nmhillusion.n2mix.helper.office.excel.model.ExcelDataModel;
 import app.netlify.nmhillusion.n2mix.util.CollectionUtil;
 import app.netlify.nmhillusion.n2mix.util.NumberUtil;
 import org.apache.poi.ss.usermodel.*;
@@ -27,8 +29,8 @@ public class ExcelDataSheet {
         return excelDataModel;
     }
 
-    public ExcelDataSheet setExcelDataModel(ExcelDataModel excelDataModel) {
-        this.excelDataModel = excelDataModel;
+    public ExcelDataSheet setExcelDataModel(ExcelDataModel basicExcelDataModel) {
+        this.excelDataModel = basicExcelDataModel;
         return this;
     }
 
@@ -81,7 +83,7 @@ public class ExcelDataSheet {
         return rowStyle;
     }
 
-    public void addBodyData(Workbook workbook, Sheet sheet) {
+    public void addBodyData(Workbook workbook, Sheet sheet) throws MissingDataException {
         if (!CollectionUtil.isNullOrEmpty(excelDataModel.getBodyData())) {
             for (List<String> rowData : excelDataModel.getBodyData()) {
                 if (!CollectionUtil.isNullOrEmpty(rowData)) {

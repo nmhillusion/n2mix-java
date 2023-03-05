@@ -1,7 +1,7 @@
-package app.netlify.nmhillusion.n2mix.helper.office;
+package app.netlify.nmhillusion.n2mix.helper.office.excel;
 
-import app.netlify.nmhillusion.n2mix.helper.office.excel.ExcelDataModel;
-import app.netlify.nmhillusion.n2mix.helper.office.excel.ExcelDataSheet;
+import app.netlify.nmhillusion.n2mix.exception.MissingDataException;
+import app.netlify.nmhillusion.n2mix.helper.office.excel.model.ExcelDataModel;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,7 +29,7 @@ public class ExcelWriteHelper {
         return this;
     }
 
-    public byte[] build() throws IOException {
+    public byte[] build() throws IOException, MissingDataException {
         try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
             for (ExcelDataSheet dataSheet : dataSheets) {

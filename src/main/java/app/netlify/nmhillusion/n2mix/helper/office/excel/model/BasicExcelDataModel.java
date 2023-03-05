@@ -1,4 +1,4 @@
-package app.netlify.nmhillusion.n2mix.helper.office.excel;
+package app.netlify.nmhillusion.n2mix.helper.office.excel.model;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import java.util.List;
  * created-by: nmhillusion
  */
 
-public class ExcelDataModel {
+public class BasicExcelDataModel implements ExcelDataModel {
     private String sheetName;
     private List<List<String>> headers;
     private List<List<String>> bodyData;
@@ -17,7 +17,7 @@ public class ExcelDataModel {
         return sheetName;
     }
 
-    public ExcelDataModel setSheetName(String sheetName) {
+    public BasicExcelDataModel setSheetName(String sheetName) {
         this.sheetName = sheetName;
         return this;
     }
@@ -26,7 +26,7 @@ public class ExcelDataModel {
         return headers;
     }
 
-    public ExcelDataModel setHeaders(List<List<String>> headers) {
+    public BasicExcelDataModel setHeaders(List<List<String>> headers) {
         this.headers = headers;
         return this;
     }
@@ -35,7 +35,7 @@ public class ExcelDataModel {
         return bodyData;
     }
 
-    public ExcelDataModel setBodyData(List<List<String>> bodyData) {
+    public BasicExcelDataModel setBodyData(List<List<String>> bodyData) {
         this.bodyData = bodyData;
         return this;
     }
