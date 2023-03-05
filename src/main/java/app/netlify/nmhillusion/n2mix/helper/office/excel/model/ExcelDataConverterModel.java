@@ -70,10 +70,6 @@ public class ExcelDataConverterModel<T> implements ExcelDataModel {
             throw new MissingDataException("Missing `rawData` to execute excel converter");
         }
 
-        if (null == columnConverters) {
-            throw new MissingDataException("Missing `columnConverters` to execute excel converter");
-        }
-
         return rawData.stream()
                 .map(item -> {
                     final List<String> rowData = new LinkedList<>();
@@ -88,6 +84,6 @@ public class ExcelDataConverterModel<T> implements ExcelDataModel {
                     }
                     return rowData;
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 }

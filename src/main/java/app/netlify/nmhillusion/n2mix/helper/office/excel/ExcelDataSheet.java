@@ -84,8 +84,9 @@ public class ExcelDataSheet {
     }
 
     public void addBodyData(Workbook workbook, Sheet sheet) throws MissingDataException {
-        if (!CollectionUtil.isNullOrEmpty(excelDataModel.getBodyData())) {
-            for (List<String> rowData : excelDataModel.getBodyData()) {
+        final List<List<String>> bodyData = excelDataModel.getBodyData();
+        if (!CollectionUtil.isNullOrEmpty(bodyData)) {
+            for (List<String> rowData : bodyData) {
                 if (!CollectionUtil.isNullOrEmpty(rowData)) {
                     final Row row = sheet.createRow(mainRowIndex++);
                     for (String cellData : rowData) {
