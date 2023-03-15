@@ -1,6 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.http;
 
 import app.netlify.nmhillusion.n2mix.exception.ApiResponseException;
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.model.ApiErrorResponse;
 import app.netlify.nmhillusion.n2mix.validator.StringValidator;
 import okhttp3.OkHttpClient;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
@@ -117,7 +118,7 @@ public class HttpHelper {
 
             return builder.build();
         } catch (Exception e) {
-            getLog(HttpHelper.class).error(e);
+            LogHelper.getLogger(HttpHelper.class).error(e);
             throw new ApiResponseException(e);
         }
     }
@@ -172,7 +173,7 @@ public class HttpHelper {
                 return responseBody.bytes();
             } else {
                 String rawResponse = responseBody.string();
-                getLog(this).debug(httpBuilder.getUrl() + " -> rawResponse: " + rawResponse + "; httpResponse: " + response);
+                LogHelper.getLogger(this).debug(httpBuilder.getUrl() + " -> rawResponse: " + rawResponse + "; httpResponse: " + response);
                 if (!StringValidator.isBlank(rawResponse)) {
                     JSONObject errorBody = new JSONObject(rawResponse);
                     throw new ApiResponseException(

@@ -16,7 +16,7 @@ public class StringValidator {
     public static boolean isValidStringId(String stringId) {
         final boolean valid = stringId.matches("[\\w-_]+");
         if (!valid) {
-            LogHelper.getLog(StringValidator.class).debug("stringId is not valid: " + stringId);
+            LogHelper.getLogger(StringValidator.class).debug("stringId is not valid: " + stringId);
         }
         return valid;
     }

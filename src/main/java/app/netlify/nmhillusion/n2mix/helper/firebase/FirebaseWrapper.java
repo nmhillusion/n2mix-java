@@ -1,10 +1,11 @@
 package app.netlify.nmhillusion.n2mix.helper.firebase;
 
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2022-12-09
@@ -40,7 +41,7 @@ public class FirebaseWrapper {
 
     private void triggerWorker() throws Throwable {
         if (isRunning) {
-            getLog(this).debug("no need to trigger, because queue is running now");
+            LogHelper.getLogger(this).debug("no need to trigger, because queue is running now");
             return;
         }
 
@@ -52,7 +53,7 @@ public class FirebaseWrapper {
             }
 
             while (!jobsQueue.isEmpty()) {
-                getLog(this).debug("current job queue size: " + jobsQueue.size());
+                LogHelper.getLogger(this).debug("current job queue size: " + jobsQueue.size());
 
                 final ThrowableVoidFunction<FirebaseHelper> firstJob = jobsQueue.remove(0);
                 firstJob.throwableVoidApply(firebaseHelper);

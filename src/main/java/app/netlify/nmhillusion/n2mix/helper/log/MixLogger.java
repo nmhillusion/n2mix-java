@@ -8,7 +8,7 @@ import org.slf4j.MarkerFactory;
 
 import java.util.Calendar;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 public class MixLogger {
     private final Logger logger;
@@ -23,16 +23,16 @@ public class MixLogger {
 
     public static void main(String[] args) {
         try {
-            getLog(MixLogger.class).infoFormat("test > $data > $value", new ChainMap<String, String>()
+            LogHelper.getLogger(MixLogger.class).infoFormat("test > $data > $value", new ChainMap<String, String>()
                     .chainPut("data", "myData")
                     .chainPut("value", "myValue"));
-            getLog(MixLogger.class).info("hello world\nabc world");
+            LogHelper.getLogger(MixLogger.class).info("hello world\nabc world");
 
             Long.parseLong("g");
             int val = 8 / 0;
             System.out.println("val: " + val);
         } catch (Exception ex) {
-            getLog(MixLogger.class).info(ex);
+            LogHelper.getLogger(MixLogger.class).info(ex);
         }
     }
 

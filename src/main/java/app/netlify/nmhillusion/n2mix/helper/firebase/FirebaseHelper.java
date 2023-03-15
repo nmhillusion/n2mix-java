@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2022-09-25
@@ -52,7 +52,7 @@ public class FirebaseHelper implements AutoCloseable {
         try {
             this.firebaseApp = FirebaseApp.getInstance();
         } catch (IllegalStateException ex) {
-            LogHelper.getLog(this).error("Cannot get instance of firebase: IllegalStateException : " + ex.getMessage());
+            LogHelper.getLogger(this).error("Cannot get instance of firebase: IllegalStateException : " + ex.getMessage());
             initializeFirebase();
         }
     }
@@ -61,10 +61,10 @@ public class FirebaseHelper implements AutoCloseable {
         final String serviceAccountPath = firebaseConfig.getServiceAccountConfig().getCredentialFilePath();
         final String serviceAccountProjectId = firebaseConfig.getServiceAccountConfig().getProjectId();
 
-        getLog(this).debugFormat("==> serviceAccountPath = %s", serviceAccountPath);
-        getLog(this).debugFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
+        LogHelper.getLogger(this).debugFormat("==> serviceAccountPath = %s", serviceAccountPath);
+        LogHelper.getLogger(this).debugFormat("==> serviceAccountProjectId = %s", serviceAccountProjectId);
 
-        getLog(this).info("Initializing Firebase >>");
+        LogHelper.getLogger(this).info("Initializing Firebase >>");
         try (final InputStream serviceAccInputStream = Files.newInputStream(new File(serviceAccountPath).toPath())) {
             final FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccInputStream))
@@ -73,7 +73,7 @@ public class FirebaseHelper implements AutoCloseable {
                     .setReadTimeout(60_000)
                     .build();
             this.firebaseApp = FirebaseApp.initializeApp(options);
-            getLog(this).info("<< Initializing Firebase Success: " + firebaseApp);
+            LogHelper.getLogger(this).info("<< Initializing Firebase Success: " + firebaseApp);
         }
     }
 
@@ -102,7 +102,7 @@ public class FirebaseHelper implements AutoCloseable {
                 _firestore.close();
                 _firestore.shutdown();
             } catch (Throwable ex) {
-                getLog(this).error(ex);
+                LogHelper.getLogger(this).error(ex);
             }
         });
 
@@ -111,6 +111,6 @@ public class FirebaseHelper implements AutoCloseable {
         }
 
         isUsing = false;
-        getLog(this).info("close FirebaseApp");
+        LogHelper.getLogger(this).info("close FirebaseApp");
     }
 }

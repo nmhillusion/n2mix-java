@@ -24,7 +24,7 @@ public class Stringeable implements Serializable {
                 field.setAccessible(true);
                 fieldMap.put(field.getName(), field.get(this));
             } catch (IllegalAccessException e) {
-                LogHelper.getLog(this).error(e);
+                LogHelper.getLogger(this).error(e);
                 fieldMap.put(field.getName(), "!!!Error: IllegalAccessException");
             }
         }

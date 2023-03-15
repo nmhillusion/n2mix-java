@@ -3,7 +3,7 @@ package app.netlify.nmhillusion.n2mix.helper.log;
 import java.util.HashMap;
 import java.util.Map;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2020-12-16
@@ -51,7 +51,7 @@ public class ParamLogHelper {
             }
             return "Param_of_Method: " + methodName + "(" + resultMap + ");";
         } catch (Exception ex) {
-            getLog(this).warn(ex);
+            LogHelper.getLogger(this).warn(ex);
             return "-- Cannot wire param - method --";
         }
     }

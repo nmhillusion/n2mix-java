@@ -50,11 +50,11 @@ public class LogHelper {
         return mixLogger;
     }
 
-    public static MixLogger getLog(Object object_) {
-        return getLog(object_, usePiLogger);
+    public static MixLogger getLogger(Object object_) {
+        return getLogger(object_, usePiLogger);
     }
 
-    public static MixLogger getLog(Object object_, boolean usePiLogger) {
+    public static MixLogger getLogger(Object object_, boolean usePiLogger) {
         String logName = object_ instanceof Class ? ((Class<?>) object_).getName() : object_.getClass().getName();
         if (logFactory.containsKey(logName)) {
             return logFactory.get(logName);

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -29,11 +29,11 @@ class FirebaseWrapperTest {
 
     @BeforeAll
     static void init() throws IOException {
-        getLog(FirebaseWrapperTest.class).debug("init for firebase wrapper");
+        LogHelper.getLogger(FirebaseWrapperTest.class).debug("init for firebase wrapper");
         final String credentialFilePath = getFirebaseConfig("service-account.path");
 
         if (!new File(credentialFilePath).exists()) {
-            getLog(FirebaseWrapperTest.class).warn("Don't run this test because this environment does not have firebase service-account.path");
+            LogHelper.getLogger(FirebaseWrapperTest.class).warn("Don't run this test because this environment does not have firebase service-account.path");
             ableToTest = false;
             return;
         }
@@ -55,12 +55,12 @@ class FirebaseWrapperTest {
             FirebaseWrapper firebaseWrapper = FirebaseWrapper.getInstance();
 
             firebaseWrapper.runWithWrapper(firebaseHelper -> {
-                LogHelper.getLog(this).info("running in wrapper: " + Thread.currentThread().getName());
+                LogHelper.getLogger(this).info("running in wrapper: " + Thread.currentThread().getName());
                 final Optional<Firestore> firestore = firebaseHelper.getFirestore();
                 if (firestore.isPresent()) {
                     final Iterable<CollectionReference> collectionReferences = firestore.get().listCollections();
                     collectionReferences.forEach(collectionReference -> {
-                        getLog(this).info("col: " + collectionReference.getId());
+                        LogHelper.getLogger(this).info("col: " + collectionReference.getId());
                     });
                 }
             });

@@ -15,7 +15,7 @@ class IOStreamUtilTest {
             out = IOStreamUtil.convertInputStreamToByteArray(new ByteArrayInputStream(new byte[]{
                     1, 67, 3, 25, 65, 89, 3, 5, 78, 111, 78, 90
             }));
-            LogHelper.getLog(this).info(" file size: " + out.length);
+            LogHelper.getLogger(this).info(" file size: " + out.length);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -27,7 +27,7 @@ class IOStreamUtilTest {
         String result = "";
         try {
             result = IOStreamUtil.convertInputStreamToString(new ByteArrayInputStream("Data is very interesting!".getBytes()));
-            LogHelper.getLog(this).info(" result: " + result);
+            LogHelper.getLogger(this).info(" result: " + result);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -40,7 +40,7 @@ class IOStreamUtilTest {
         try {
             result =
                     IOStreamUtil.convertInputStreamToBase64(new ByteArrayInputStream("Data is very interesting!".getBytes()));
-            LogHelper.getLog(this).info(" result: " + result);
+            LogHelper.getLogger(this).info(" result: " + result);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

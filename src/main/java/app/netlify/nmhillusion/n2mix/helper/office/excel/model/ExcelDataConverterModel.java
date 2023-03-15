@@ -78,7 +78,7 @@ public class ExcelDataConverterModel<T> implements ExcelDataModel {
                         try {
                             cellData = colConverter.getValue().throwableApply(item);
                         } catch (Throwable e) {
-                            LogHelper.getLog(this).error(e);
+                            LogHelper.getLogger(this).error(e);
                         }
                         rowData.add(cellData);
                     }

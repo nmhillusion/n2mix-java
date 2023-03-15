@@ -29,7 +29,7 @@ public abstract class CastUtil {
                 result = classToCast.cast(value);
             }
         } catch (ClassCastException ex) {
-            LogHelper.getLog(CastUtil.class).error(ex);
+            LogHelper.getLogger(CastUtil.class).error(ex);
             result = defaultValue;
         }
         return result;

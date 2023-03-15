@@ -1,5 +1,6 @@
 package app.netlify.nmhillusion.n2mix.util;
 
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.validator.StringValidator;
 
 import java.sql.Timestamp;
@@ -12,7 +13,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2022-11-18
@@ -90,7 +91,7 @@ public abstract class DateUtil {
 
             return LocalDate.of(year_, month_, day_);
         } catch (Exception ex) {
-            getLog(DateUtil.class).error(ex);
+            LogHelper.getLogger(DateUtil.class).error(ex);
             return null;
         }
     }
@@ -103,7 +104,7 @@ public abstract class DateUtil {
                 formattedDate = dateFormatter.format(date);
             }
         } catch (Exception ex) {
-            getLog(DateUtil.class).error(ex);
+            LogHelper.getLogger(DateUtil.class).error(ex);
         }
         return formattedDate;
     }
@@ -121,7 +122,7 @@ public abstract class DateUtil {
                 date = dateFormatter.parse(dateText);
             }
         } catch (Exception ex) {
-            getLog(DateUtil.class).error(ex);
+            LogHelper.getLogger(DateUtil.class).error(ex);
         }
         return date;
     }
@@ -133,7 +134,7 @@ public abstract class DateUtil {
                 date = new java.sql.Date(javaDate.getTime());
             }
         } catch (Exception ex) {
-            getLog(DateUtil.class);
+            LogHelper.getLogger(DateUtil.class);
         }
         return date;
     }
@@ -164,7 +165,7 @@ public abstract class DateUtil {
             Date javaDate = parse(dateText, datePattern);
             date = parseSqlDate(javaDate);
         } catch (Exception ex) {
-            getLog(DateUtil.class).error(ex);
+            LogHelper.getLogger(DateUtil.class).error(ex);
         }
         return date;
     }

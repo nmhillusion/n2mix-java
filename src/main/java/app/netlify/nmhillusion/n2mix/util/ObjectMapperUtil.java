@@ -54,7 +54,7 @@ public abstract class ObjectMapperUtil {
                 Method setMethod = clsToConvert.getMethod(setMethodName, field.getType());
                 setMethod.invoke(data, jsonData.get(key));
             } catch (Exception ex) {
-                LogHelper.getLog(ObjectMapperUtil.class).warn(ex);
+                LogHelper.getLogger(ObjectMapperUtil.class).warn(ex);
             }
         }
 

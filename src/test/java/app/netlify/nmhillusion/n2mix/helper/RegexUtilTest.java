@@ -1,5 +1,6 @@
 package app.netlify.nmhillusion.n2mix.helper;
 
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.util.RegexUtil;
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RegexUtilTest {
@@ -28,6 +29,6 @@ class RegexUtilTest {
 
         assertEquals(expectedList, actualList);
 
-        getLog(this).info("actualList: " + actualList);
+        LogHelper.getLogger(this).info("actualList: " + actualList);
     }
 }

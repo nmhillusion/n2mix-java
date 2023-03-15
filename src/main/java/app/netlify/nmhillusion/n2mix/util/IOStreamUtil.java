@@ -46,7 +46,7 @@ public abstract class IOStreamUtil {
             final byte[] byteData = Files.readAllBytes(Paths.get(absoluteResourcePath));
             return new String(byteData, StandardCharsets.UTF_8);
         } catch (Exception ex) {
-            LogHelper.getLog(IOStreamUtil.class).error(ex);
+            LogHelper.getLogger(IOStreamUtil.class).error(ex);
             return "";
         }
     }

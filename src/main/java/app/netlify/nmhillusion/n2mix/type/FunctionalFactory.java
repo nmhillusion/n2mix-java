@@ -22,7 +22,7 @@ public class FunctionalFactory {
                         .filter(predicateOf((Integer it) -> 0 == it % 2).and(it -> it >= 5))
                         .collect(Collectors.toList());
 
-        LogHelper.getLog(FunctionalFactory.class).info("even integers: " + evenIntegers);
+        LogHelper.getLogger(FunctionalFactory.class).info("even integers: " + evenIntegers);
     }
 
     public static <T> Predicate<T> predicateOf(Predicate<T> predicate) {

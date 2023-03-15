@@ -3,10 +3,11 @@ package app.netlify.nmhillusion.n2mix.helper;
 import app.netlify.nmhillusion.n2mix.constant.OkHttpContentType;
 import app.netlify.nmhillusion.n2mix.helper.http.HttpHelper;
 import app.netlify.nmhillusion.n2mix.helper.http.RequestHttpBuilder;
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.type.ChainMap;
 import org.junit.jupiter.api.Test;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class HttpHelperTest {
@@ -20,14 +21,14 @@ class HttpHelperTest {
                     new RequestHttpBuilder()
                             .setUrl("https://google.com")
             );
-            getLog(this).info("Content of get Google homepage: " + new String(bytes));
+            LogHelper.getLogger(this).info("Content of get Google homepage: " + new String(bytes));
         });
     }
 
     @Test
     void post() {
         assertDoesNotThrow(() -> {
-            getLog(this).info("start post data");
+            LogHelper.getLogger(this).info("start post data");
 
             final byte[] binPostData = httpHelper.post(new RequestHttpBuilder()
                     .setUrl("https://httpbin.org/post")
@@ -39,7 +40,7 @@ class HttpHelperTest {
                             OkHttpContentType.JSON)
             );
 
-            getLog(this).info("binPostData: " + new String(binPostData));
+            LogHelper.getLogger(this).info("binPostData: " + new String(binPostData));
         });
     }
 }

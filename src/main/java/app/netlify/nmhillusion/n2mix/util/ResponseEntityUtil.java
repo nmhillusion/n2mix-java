@@ -2,6 +2,7 @@ package app.netlify.nmhillusion.n2mix.util;
 
 import app.netlify.nmhillusion.n2mix.constant.ContentType;
 import app.netlify.nmhillusion.n2mix.exception.ApiResponseException;
+import app.netlify.nmhillusion.n2mix.helper.log.LogHelper;
 import app.netlify.nmhillusion.n2mix.model.ApiErrorResponse;
 import app.netlify.nmhillusion.n2mix.type.function.ThrowableVoidNoInputFunction;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLog;
+import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 public abstract class ResponseEntityUtil {
     private static int isWriteResponse = -1;
@@ -29,15 +30,15 @@ public abstract class ResponseEntityUtil {
 
                 maxResponseLog = Integer.parseInt(maxResponseLogRaw);
             } catch (Exception ex) {
-                getLog(ResponseEntityUtil.class).error(ex.getMessage());
+                LogHelper.getLogger(ResponseEntityUtil.class).error(ex.getMessage());
             }
         }
 
         if (1 == isWriteResponse) {
             try {
-                getLog(ResponseEntityUtil.class).info(StringUtil.truncate(String.valueOf(body), maxResponseLog));
+                LogHelper.getLogger(ResponseEntityUtil.class).info(StringUtil.truncate(String.valueOf(body), maxResponseLog));
             } catch (Exception ex) {
-                getLog(ResponseEntityUtil.class).error(ex);
+                LogHelper.getLogger(ResponseEntityUtil.class).error(ex);
             }
         }
     }
@@ -57,7 +58,7 @@ public abstract class ResponseEntityUtil {
         try {
             func.apply();
         } catch (Exception ex) {
-            getLog(ResponseEntityUtil.class).error(ex);
+            LogHelper.getLogger(ResponseEntityUtil.class).error(ex);
             throw new ApiResponseException(ex);
         }
         /// Mark: RETURN RESPONSE
