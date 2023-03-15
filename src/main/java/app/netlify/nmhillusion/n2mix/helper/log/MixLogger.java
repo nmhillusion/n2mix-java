@@ -88,7 +88,7 @@ public class MixLogger {
             }
 
             /// Mark: Format with $
-            if (!CollectionUtil.isNullOrEmpty(params)) {
+            if (!CollectionUtil.isNullOrEmptyArgv(params)) {
                 if (params[0] instanceof final ChainMap<?, ?> paramsChainMap) {
                     for (Object key : paramsChainMap.keySet()) {
                         final Object value = paramsChainMap.get(key);

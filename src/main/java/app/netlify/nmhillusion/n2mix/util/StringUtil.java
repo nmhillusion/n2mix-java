@@ -43,7 +43,7 @@ public abstract class StringUtil {
 
     public static String getFirstValueNotNull(Object... optionalValues) {
         String strValue = "";
-        if (!CollectionUtil.isNullOrEmpty(optionalValues)) {
+        if (!CollectionUtil.isNullOrEmptyArgv(optionalValues)) {
             for (Object rOptionalValue : optionalValues) {
                 final String optionalValue = String.valueOf(rOptionalValue);
                 if (null != rOptionalValue && !StringValidator.isBlank(optionalValue)) {

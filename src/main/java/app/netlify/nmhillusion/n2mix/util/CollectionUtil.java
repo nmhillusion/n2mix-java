@@ -19,7 +19,11 @@ public abstract class CollectionUtil {
         return null == map || map.isEmpty();
     }
 
-    public static boolean isNullOrEmpty(@Nullable Object... data) {
+    public static boolean isNullOrEmpty(@Nullable Object[] data) {
+        return null == data || 0 == data.length;
+    }
+
+    public static boolean isNullOrEmptyArgv(@Nullable Object... data) {
         return null == data || 0 == data.length;
     }
 
