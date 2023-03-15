@@ -3,8 +3,6 @@ package app.netlify.nmhillusion.n2mix.helper.log;
 import java.util.HashMap;
 import java.util.Map;
 
-import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
-
 /**
  * date: 2020-12-16
  * created-by: nmhillusion
