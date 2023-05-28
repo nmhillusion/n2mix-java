@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * date: 2020-09-26
- * created-by: nmhillusion
+ * created-by: minguy1
  */
 
 public class ExtractResultPage {

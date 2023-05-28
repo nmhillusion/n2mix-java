@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * created at: 2021-07-29
- * created-by: nmhillusion
+ * created-by: minguy1
  */
 
 public class CombinableFunctionResult<R> {
