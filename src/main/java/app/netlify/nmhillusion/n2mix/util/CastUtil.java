@@ -15,7 +15,9 @@ public abstract class CastUtil {
     public static <T> T safeCast(Object value, Class<T> classToCast, T defaultValue) {
         T result;
         try {
-            if (classToCast.isAssignableFrom(Integer.class) || classToCast.isAssignableFrom(int.class)) {
+            if (classToCast.isAssignableFrom(Object.class)) {
+                result = classToCast.cast(value);
+            } else if (classToCast.isAssignableFrom(Integer.class) || classToCast.isAssignableFrom(int.class)) {
                 result = classToCast.cast(Integer.parseInt(String.valueOf(value)));
             } else if (classToCast.isAssignableFrom(Long.class) || classToCast.isAssignableFrom(long.class)) {
                 result = classToCast.cast(Long.parseLong(String.valueOf(value)));

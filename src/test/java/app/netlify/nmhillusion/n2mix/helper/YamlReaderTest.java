@@ -48,6 +48,14 @@ class YamlReaderTest {
                     final int lesson = yamlReader.getProperty("lesson", Integer.class, 10);
                     assertEquals(10, lesson, "check lesson with default value");
                 }
+
+                {
+                    final Object bicycleColorObj = yamlReader.getProperty("bicycle.color", Object.class);
+                    final Object bicycleWheelObj = yamlReader.getProperty("bicycle.wheel", Object.class);
+
+                    assertEquals("white", bicycleColorObj, "check object obtained: bicycle.color");
+                    assertEquals(2, bicycleWheelObj, "check object obtained: bicycle.wheel");
+                }
             }
         });
     }
