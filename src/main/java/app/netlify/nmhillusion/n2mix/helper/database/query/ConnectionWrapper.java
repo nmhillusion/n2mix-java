@@ -1,4 +1,4 @@
-package app.netlify.nmhillusion.n2mix.helper.database;
+package app.netlify.nmhillusion.n2mix.helper.database.query;
 
 import org.hibernate.Session;
 

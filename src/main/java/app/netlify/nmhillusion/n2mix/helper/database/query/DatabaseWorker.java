@@ -1,4 +1,4 @@
-package app.netlify.nmhillusion.n2mix.helper.database;
+package app.netlify.nmhillusion.n2mix.helper.database.query;
 
 import app.netlify.nmhillusion.n2mix.type.function.ThrowableFunction;
 import app.netlify.nmhillusion.n2mix.type.function.ThrowableReturnType;
