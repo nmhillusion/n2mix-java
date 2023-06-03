@@ -14,8 +14,9 @@ import java.util.Map;
 import static app.netlify.nmhillusion.n2mix.constant.OkHttpContentType.*;
 
 /**
- * date: 2020-08-24
- * created-by: minguy1
+ * date: 2023-06-03
+ * <p>
+ * created-by: nmhillusion
  */
 
 public class RequestHttpBuilder {

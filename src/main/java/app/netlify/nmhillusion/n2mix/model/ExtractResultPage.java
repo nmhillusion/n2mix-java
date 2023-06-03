@@ -5,8 +5,9 @@ import app.netlify.nmhillusion.n2mix.type.RowResultSetMap;
 import java.util.List;
 
 /**
- * date: 2020-09-26
- * created-by: minguy1
+ * date: 2023-06-03
+ * <p>
+ * created-by: nmhillusion
  */
 
 public class ExtractResultPage {

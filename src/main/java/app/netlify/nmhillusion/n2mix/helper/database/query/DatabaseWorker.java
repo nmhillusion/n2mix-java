@@ -10,9 +10,9 @@ import javax.sql.DataSource;
 import java.util.function.BiFunction;
 
 /**
- * date: 2021-08-06
+ * date: 2023-06-03
  * <p>
- * created-by: minguy1
+ * created-by: nmhillusion
  */
 
 public class DatabaseWorker {

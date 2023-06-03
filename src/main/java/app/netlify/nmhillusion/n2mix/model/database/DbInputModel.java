@@ -3,10 +3,11 @@ package app.netlify.nmhillusion.n2mix.model.database;
 import java.sql.SQLException;
 
 /**
- * date: 2021-11-10
+ * date: 2023-06-03
  * <p>
- * created-by: minguy1
+ * created-by: nmhillusion
  */
+
 public interface DbInputModel {
     String getInputName();
 

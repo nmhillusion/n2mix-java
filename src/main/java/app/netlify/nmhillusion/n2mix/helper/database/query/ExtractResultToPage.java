@@ -20,8 +20,9 @@ import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 
 /**
- * date: 2020-09-26
- * created-by: minguy1
+ * date: 2023-06-03
+ * <p>
+ * created-by: nmhillusion
  */
 
 public class ExtractResultToPage {

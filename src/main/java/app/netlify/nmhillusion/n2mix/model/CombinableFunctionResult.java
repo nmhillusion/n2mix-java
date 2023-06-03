@@ -3,8 +3,9 @@ package app.netlify.nmhillusion.n2mix.model;
 import java.util.List;
 
 /**
- * created at: 2021-07-29
- * created-by: minguy1
+ * date: 2023-06-03
+ * <p>
+ * created-by: nmhillusion
  */
 
 public class CombinableFunctionResult<R> {

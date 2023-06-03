@@ -1,9 +1,9 @@
 package app.netlify.nmhillusion.n2mix.helper.database.config;
 
 /**
- * date: 2021-08-06
+ * date: 2023-06-03
  * <p>
- * created-by: minguy1
+ * created-by: nmhillusion
  */
 
 public class DataSourceCacheProperties {
