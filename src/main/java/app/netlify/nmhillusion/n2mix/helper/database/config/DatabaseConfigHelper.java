@@ -26,8 +26,8 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-public class DatabaseConfig {
-    public static final DatabaseConfig INSTANCE = new DatabaseConfig();
+public class DatabaseConfigHelper {
+    public static final DatabaseConfigHelper INSTANCE = new DatabaseConfigHelper();
     private static final int POOL_SIZE = Runtime.getRuntime().availableProcessors() * 5 + 2;
 
     @Bean("defaultPlatformTransactionManager")
@@ -40,11 +40,9 @@ public class DatabaseConfig {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    public SessionFactory internalSessionFactory(DataSourceProperties dataSourceProperties) throws IOException {
-
-
+    public SessionFactory generateSessionFactory(DataSourceProperties dataSourceProperties) throws IOException {
         final LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
-        sessionFactoryBean.setDataSource(dataSource(dataSourceProperties));
+        sessionFactoryBean.setDataSource(generateDataSource(dataSourceProperties));
 
         final Properties hibernateProperties = new Properties();
         hibernateProperties.putAll(getHibernateProperties(dataSourceProperties));
@@ -54,7 +52,7 @@ public class DatabaseConfig {
         return sessionFactoryBean.getObject();
     }
 
-    public DataSource dataSource(DataSourceProperties dataSourceProperties) {
+    public DataSource generateDataSource(DataSourceProperties dataSourceProperties) {
         final HikariDataSource internalDataSource = new HikariDataSource();
         final String dataSourceName = "bpm-internal";
 
@@ -78,7 +76,7 @@ public class DatabaseConfig {
     }
 
     public LocalContainerEntityManagerFactoryBean generateEntityManagerFactoryBean(String persistenceUnitName, DataSourceProperties dataSourceProperties, Class<?> mainClassToScan) {
-        return generateEntityManagerFactoryBean(persistenceUnitName, dataSource(dataSourceProperties), dataSourceProperties, mainClassToScan);
+        return generateEntityManagerFactoryBean(persistenceUnitName, generateDataSource(dataSourceProperties), dataSourceProperties, mainClassToScan);
     }
 
     public LocalContainerEntityManagerFactoryBean generateEntityManagerFactoryBean(String persistenceUnitName,
