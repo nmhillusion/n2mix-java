@@ -1,5 +1,7 @@
 package app.netlify.nmhillusion.n2mix.helper.database.config;
 
+import app.netlify.nmhillusion.n2mix.constant.CommonConfigDataSourceValue;
+
 /**
  * date: 2023-06-03
  * <p>
@@ -7,6 +9,7 @@ package app.netlify.nmhillusion.n2mix.helper.database.config;
  */
 
 public class DataSourceProperties {
+    private String dataSourceName;
     private String dialectClass;
     private String showSql;
     private DataSourceCacheProperties cached;
@@ -17,13 +20,37 @@ public class DataSourceProperties {
     private String coordinatorClass;
     private String generateStatistics;
 
-    public static DataSourceProperties defaultDataSourceProperties() {
+    private String registerMbeans;
+
+    public static DataSourceProperties generateFromDefaultDataSourceProperties(
+            CommonConfigDataSourceValue.DataSourceConfig dataSourceConfig,
+            String jdbcUrl,
+            String username,
+            String password
+    ) {
+        return generateFromDefaultDataSourceProperties(
+                "defaultDataSource"
+                , dataSourceConfig
+                , jdbcUrl
+                , username
+                , password
+        );
+    }
+
+    public static DataSourceProperties generateFromDefaultDataSourceProperties(
+            String dataSourceName,
+            CommonConfigDataSourceValue.DataSourceConfig dataSourceConfig,
+            String jdbcUrl,
+            String username,
+            String password
+    ) {
         return new DataSourceProperties()
+                .setDataSourceName(dataSourceName)
                 .setConnection(new DataSourceConnectionProperties()
-                        .setDriverClassName("--user-have-to-self-config--")
-                        .setJdbcUrl("--user-have-to-self-config--")
-                        .setUsername("--user-have-to-self-config--")
-                        .setPassword("--user-have-to-self-config--")
+                        .setDriverClassName(dataSourceConfig.getDriverClass())
+                        .setJdbcUrl(jdbcUrl)
+                        .setUsername(username)
+                        .setPassword(password)
                         .setAutocommit("true")
                         .setLeakDetectionThreshold("20000")
                         .setConnectionTimeout("30000")
@@ -31,7 +58,7 @@ public class DataSourceProperties {
                         .setMaxLifetime("1800000")
                         .setMinimumIdle("10")
                 )
-                .setDialectClass("--user-have-to-self-config--")
+                .setDialectClass(dataSourceConfig.getDialectClass())
                 .setShowSql("false")
                 .setCached(new DataSourceCacheProperties()
                         .setEnabled("true")
@@ -43,7 +70,18 @@ public class DataSourceProperties {
                 .setHbm2ddlAuto("none")
                 .setCurrentSessionContextClass("thread")
                 .setCoordinatorClass("jdbc")
-                .setGenerateStatistics("false");
+                .setGenerateStatistics("false")
+                .setRegisterMbeans("false")
+                ;
+    }
+
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    public DataSourceProperties setDataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+        return this;
     }
 
     public DataSourceConnectionProperties getConnection() {
@@ -124,6 +162,15 @@ public class DataSourceProperties {
 
     public DataSourceProperties setGenerateStatistics(String generateStatistics) {
         this.generateStatistics = generateStatistics;
+        return this;
+    }
+
+    public String getRegisterMbeans() {
+        return registerMbeans;
+    }
+
+    public DataSourceProperties setRegisterMbeans(String registerMbeans) {
+        this.registerMbeans = registerMbeans;
         return this;
     }
 }

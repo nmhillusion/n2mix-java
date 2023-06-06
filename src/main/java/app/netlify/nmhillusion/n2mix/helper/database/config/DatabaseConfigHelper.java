@@ -53,26 +53,26 @@ public class DatabaseConfigHelper {
     }
 
     public DataSource generateDataSource(DataSourceProperties dataSourceProperties) {
-        final HikariDataSource internalDataSource = new HikariDataSource();
-        final String dataSourceName = "bpm-internal";
+        final HikariDataSource dataSource = new HikariDataSource();
+        final String dataSourceName = dataSourceProperties.getDataSourceName();
 
-        internalDataSource.setDriverClassName(dataSourceProperties.getConnection().getDriverClassName());
-        internalDataSource.setJdbcUrl(dataSourceProperties.getConnection().getJdbcUrl());
-        internalDataSource.setUsername(dataSourceProperties.getConnection().getUsername());
-        internalDataSource.setPassword(dataSourceProperties.getConnection().getPassword());
-        internalDataSource.setPoolName(dataSourceName);
+        dataSource.setDriverClassName(dataSourceProperties.getConnection().getDriverClassName());
+        dataSource.setJdbcUrl(dataSourceProperties.getConnection().getJdbcUrl());
+        dataSource.setUsername(dataSourceProperties.getConnection().getUsername());
+        dataSource.setPassword(dataSourceProperties.getConnection().getPassword());
+        dataSource.setPoolName(dataSourceName);
 
-        internalDataSource.setMaximumPoolSize(POOL_SIZE);
-        internalDataSource.setLeakDetectionThreshold(Integer.parseInt(dataSourceProperties.getConnection().getLeakDetectionThreshold()));
-        internalDataSource.setAutoCommit(Boolean.parseBoolean(dataSourceProperties.getConnection().getAutocommit()));
-        internalDataSource.setIdleTimeout(Integer.parseInt(dataSourceProperties.getConnection().getIdleTimeout()));
-        internalDataSource.setMinimumIdle(Integer.parseInt(dataSourceProperties.getConnection().getMinimumIdle()));
-        internalDataSource.setConnectionTimeout(Integer.parseInt(dataSourceProperties.getConnection().getConnectionTimeout()));
-        internalDataSource.setMaxLifetime(Integer.parseInt(dataSourceProperties.getConnection().getMaxLifetime()));
+        dataSource.setMaximumPoolSize(POOL_SIZE);
+        dataSource.setLeakDetectionThreshold(Integer.parseInt(dataSourceProperties.getConnection().getLeakDetectionThreshold()));
+        dataSource.setAutoCommit(Boolean.parseBoolean(dataSourceProperties.getConnection().getAutocommit()));
+        dataSource.setIdleTimeout(Integer.parseInt(dataSourceProperties.getConnection().getIdleTimeout()));
+        dataSource.setMinimumIdle(Integer.parseInt(dataSourceProperties.getConnection().getMinimumIdle()));
+        dataSource.setConnectionTimeout(Integer.parseInt(dataSourceProperties.getConnection().getConnectionTimeout()));
+        dataSource.setMaxLifetime(Integer.parseInt(dataSourceProperties.getConnection().getMaxLifetime()));
 
-        internalDataSource.setRegisterMbeans(false);
+        dataSource.setRegisterMbeans(Boolean.parseBoolean(dataSourceProperties.getRegisterMbeans()));
 
-        return internalDataSource;
+        return dataSource;
     }
 
     public LocalContainerEntityManagerFactoryBean generateEntityManagerFactoryBean(String persistenceUnitName, DataSourceProperties dataSourceProperties, Class<?> mainClassToScan) {
