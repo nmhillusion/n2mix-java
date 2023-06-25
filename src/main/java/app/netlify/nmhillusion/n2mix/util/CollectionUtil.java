@@ -11,8 +11,8 @@ import java.util.*;
  */
 
 public abstract class CollectionUtil {
-    public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
-        return null == collection || collection.isEmpty();
+    public static boolean isNullOrEmpty(@Nullable Iterable<?> collection) {
+        return null == collection || !collection.iterator().hasNext();
     }
 
     public static boolean isNullOrEmpty(@Nullable Map<?, ?> map) {
@@ -27,28 +27,54 @@ public abstract class CollectionUtil {
         return null == data || 0 == data.length;
     }
 
-    public static <T> Collection<T> getOrDefaultEmpty(@Nullable Collection<T> items) {
+    public static <T> Iterable<T> getOrDefaultEmpty(@Nullable Iterable<T> items) {
         if (null == items) {
             items = new ArrayList<>();
         }
         return items;
     }
 
-    public static <T> T getFirstOfList(@Nullable List<T> items) {
+    @SafeVarargs
+    public static <T> Iterable<T> getOrDefaultEmptyArgv(@Nullable T... items) {
+        final List<T> items_ = new ArrayList<>();
+        if (null != items) {
+            Collections.addAll(items_, items);
+        }
+        return items_;
+    }
+
+    @SafeVarargs
+    public static <T> T getFirstOfListArgv(@Nullable T... items) {
         T item = null;
 
         if (!isNullOrEmpty(items)) {
-            item = items.get(0);
+            item = items[0];
         }
 
         return item;
     }
 
+    public static <T> T getFirstOfList(@Nullable Iterable<T> items) {
+        T item = null;
+
+        if (!isNullOrEmpty(items)) {
+            item = items.iterator().next();
+        }
+
+        return item;
+    }
+
+    public static <T> List<T> listFromIterable(Iterable<T> iterator) {
+        return listFromIterator(iterator.iterator());
+    }
+
     public static <T> List<T> listFromIterator(Iterator<T> iterator) {
         final List<T> resultList = new ArrayList<>();
 
-        while (iterator.hasNext()) {
-            resultList.add(iterator.next());
+        if (null != iterator) {
+            while (iterator.hasNext()) {
+                resultList.add(iterator.next());
+            }
         }
 
         return resultList;
