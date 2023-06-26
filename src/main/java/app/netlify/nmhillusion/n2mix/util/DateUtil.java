@@ -197,7 +197,16 @@ public abstract class DateUtil {
         return convertToZonedDateTime(date_, ZoneId.systemDefault());
     }
     
+    
     public static ZonedDateTime convertToZonedDateTime(Date date_, ZoneId zoneId) {
+        if (null == date_) {
+            return null;
+        }
+        
+        if (null == zoneId) {
+            zoneId = ZoneId.systemDefault();
+        }
+        
         return ZonedDateTime.from(
                 Instant.ofEpochMilli(date_.getTime())
                         .atZone(zoneId)
@@ -205,6 +214,10 @@ public abstract class DateUtil {
     }
     
     public static Date convertZonedDateTimeToDate(ZonedDateTime zonedDateTime_) {
+        if (null == zonedDateTime_) {
+            return null;
+        }
+        
         final long epochMillis = zonedDateTime_.toInstant().toEpochMilli();
         return new java.sql.Date(epochMillis);
     }

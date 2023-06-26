@@ -8,6 +8,7 @@ import java.util.Date;
 
 import static app.netlify.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DateUtilTest {
     
@@ -66,6 +67,11 @@ class DateUtilTest {
     }
     
     @Test
+    void convertToZonedDateTimeWithNull() {
+        assertNull(DateUtil.convertToZonedDateTime(null));
+    }
+    
+    @Test
     void convertZonedDateTimeToDate() {
         final ZonedDateTime zonedDateTime = ZonedDateTime.now();
         final Date date_ = DateUtil.convertZonedDateTimeToDate(zonedDateTime);
@@ -80,5 +86,10 @@ class DateUtilTest {
         final int second_ = calendar.get(Calendar.SECOND);
         
         getLogger(this).info("zoned date time  - time(HH:mm:ss): %s:%s:%s".formatted(hour_, minute_, second_));
+    }
+    
+    @Test
+    void convertZonedDateTimeToDateWithNull() {
+        assertNull(DateUtil.convertZonedDateTimeToDate(null));
     }
 }
