@@ -16,23 +16,23 @@ import java.util.Objects;
 
 public class WorkingResultSetHelper {
     private CallableStatement call_;
-    private String outParameterName_;
+    private String outParameterNameOfResultSet_;
     
-    public CallableStatement getCall_() {
+    public CallableStatement getCallableStatement() {
         return call_;
     }
     
-    public WorkingResultSetHelper setCall_(CallableStatement call_) {
+    public WorkingResultSetHelper setCallableStatement(CallableStatement call_) {
         this.call_ = call_;
         return this;
     }
     
-    public String getOutParameterName_() {
-        return outParameterName_;
+    public String getOutParameterNameOfResultSet() {
+        return outParameterNameOfResultSet_;
     }
     
-    public WorkingResultSetHelper setOutParameterName_(String outParameterName_) {
-        this.outParameterName_ = outParameterName_;
+    public WorkingResultSetHelper setOutParameterNameOfResultSet(String outParameterNameOfResultSet_) {
+        this.outParameterNameOfResultSet_ = outParameterNameOfResultSet_;
         return this;
     }
     
@@ -41,15 +41,15 @@ public class WorkingResultSetHelper {
             throw new SQLException("CallableStatement is not existed");
         }
         
-        if (Objects.isNull(this.outParameterName_)) {
-            throw new SQLException("outParameterName is not existed");
+        if (Objects.isNull(this.outParameterNameOfResultSet_)) {
+            throw new SQLException("outParameterNameOfResultSet is not existed");
         }
     }
     
     public <R> R doReturningWorkOnResultSet(ThrowableFunction<ResultSet, R> func_) throws Throwable {
         throwIfAbsentRequiredArguments();
         
-        final Object rawResult = call_.getObject(outParameterName_);
+        final Object rawResult = call_.getObject(outParameterNameOfResultSet_);
         if (rawResult instanceof ResultSet resultSet_) {
             return func_.throwableApply(resultSet_);
         }
@@ -60,7 +60,7 @@ public class WorkingResultSetHelper {
     public void doWorkOnResultSet(ThrowableVoidFunction<ResultSet> func_) throws Throwable {
         throwIfAbsentRequiredArguments();
         
-        final Object rawResult = call_.getObject(outParameterName_);
+        final Object rawResult = call_.getObject(outParameterNameOfResultSet_);
         if (rawResult instanceof ResultSet resultSet_) {
             func_.throwableVoidApply(resultSet_);
         } else {
