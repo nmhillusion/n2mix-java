@@ -2,6 +2,7 @@ package tech.nmhillusion.n2mix.helper.database.result;
 
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
+import tech.nmhillusion.n2mix.util.SelectUtil;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -57,6 +58,20 @@ public class WorkingResultSetHelper {
         }
     }
     
+    private SQLException throwExceptionForResultSet(Object rawResult_) {
+        final Object nonNullResultType = SelectUtil.getFirstValueNotNullArgv(rawResult_, new Object());
+        
+        String rawResultType = "";
+        if (null != nonNullResultType) {
+            rawResultType = nonNullResultType.getClass().getName();
+        }
+        
+        return new SQLException(
+                "Cannot obtain ResultSet. rawResult: %s; Class of rawResult: %s"
+                        .formatted(rawResult_, rawResultType)
+        );
+    }
+    
     public <R> R doReturningWorkOnResultSet(ThrowableFunction<ResultSet, R> func_) throws Throwable {
         throwIfAbsentRequiredArguments();
         
@@ -70,7 +85,7 @@ public class WorkingResultSetHelper {
                 return func_.throwableApply(resultSet_);
             }
         } else {
-            throw new SQLException("Cannot obtain ResultSet");
+            throw throwExceptionForResultSet(rawResult);
         }
     }
     
@@ -87,7 +102,7 @@ public class WorkingResultSetHelper {
                 func_.throwableVoidApply(resultSet_);
             }
         } else {
-            throw new SQLException("Cannot obtain ResultSet");
+            throw throwExceptionForResultSet(rawResult);
         }
     }
 }
