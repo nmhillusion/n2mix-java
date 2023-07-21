@@ -18,6 +18,8 @@ public class WorkingResultSetHelper {
     private CallableStatement call_;
     private String outParameterNameOfResultSet_;
     
+    private boolean willCloseResultSet = true;
+    
     public CallableStatement getCallableStatement() {
         return call_;
     }
@@ -36,6 +38,15 @@ public class WorkingResultSetHelper {
         return this;
     }
     
+    public boolean getWillCloseResultSet() {
+        return willCloseResultSet;
+    }
+    
+    public WorkingResultSetHelper setWillCloseResultSet(boolean willCloseResultSet) {
+        this.willCloseResultSet = willCloseResultSet;
+        return this;
+    }
+    
     private void throwIfAbsentRequiredArguments() throws SQLException {
         if (Objects.isNull(this.call_)) {
             throw new SQLException("CallableStatement is not existed");
@@ -51,10 +62,16 @@ public class WorkingResultSetHelper {
         
         final Object rawResult = call_.getObject(outParameterNameOfResultSet_);
         if (rawResult instanceof ResultSet resultSet_) {
-            return func_.throwableApply(resultSet_);
+            if (willCloseResultSet) {
+                try (resultSet_) {
+                    return func_.throwableApply(resultSet_);
+                }
+            } else {
+                return func_.throwableApply(resultSet_);
+            }
+        } else {
+            throw new SQLException("Cannot obtain ResultSet");
         }
-        
-        throw new SQLException("Cannot obtain ResultSet");
     }
     
     public void doWorkOnResultSet(ThrowableVoidFunction<ResultSet> func_) throws Throwable {
@@ -62,7 +79,13 @@ public class WorkingResultSetHelper {
         
         final Object rawResult = call_.getObject(outParameterNameOfResultSet_);
         if (rawResult instanceof ResultSet resultSet_) {
-            func_.throwableVoidApply(resultSet_);
+            if (willCloseResultSet) {
+                try (resultSet_) {
+                    func_.throwableVoidApply(resultSet_);
+                }
+            } else {
+                func_.throwableVoidApply(resultSet_);
+            }
         } else {
             throw new SQLException("Cannot obtain ResultSet");
         }
