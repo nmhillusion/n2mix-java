@@ -6,21 +6,36 @@ import org.slf4j.helpers.NOPLogger;
 import tech.nmhillusion.pi_logger.PiLogger;
 import tech.nmhillusion.pi_logger.PiLoggerFactory;
 import tech.nmhillusion.pi_logger.constant.LogLevel;
+import tech.nmhillusion.pi_logger.model.LogConfigModel;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 public class LogHelper {
     private static final Map<String, MixLogger> logFactory = new TreeMap<>();
+    private static final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
+            .setColoring(true)
+            .setDisplayLineNumber(true)
+            .setLogLevel(LogLevel.DEBUG)
+            .setIsOutputToFile(false)
+            .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
+            .clone();
+    
     private static boolean usePiLogger = true;
     
-    static {
+    public static LogConfigModel getDefaultPiLoggerConfig() {
+        return piLogConfigModel;
+    }
+    
+    public static void setDefaultPiLoggerConfig(LogConfigModel logConfig) {
         PiLoggerFactory.getDefaultLogConfig()
-                .setColoring(true)
-                .setDisplayLineNumber(true)
-                .setLogLevel(LogLevel.DEBUG)
-                .setIsOutputToFile(false)
-                .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
+                .setColoring(logConfig.getColoring())
+                .setDisplayLineNumber(logConfig.getDisplayLineNumber())
+                .setIsOutputToFile(logConfig.isOutputToFile())
+                .setLogFilePath(logConfig.getLogFilePath())
+                .setLogLevel(logConfig.getLogLevel())
+                .setOnChangeConfig(logConfig.getOnChangeConfig())
+                .setTimestampPattern(logConfig.getTimestampPattern())
         ;
     }
     

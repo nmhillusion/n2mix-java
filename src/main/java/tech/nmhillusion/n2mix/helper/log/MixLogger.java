@@ -4,11 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.MarkerFactory;
 import tech.nmhillusion.n2mix.type.ChainMap;
 import tech.nmhillusion.n2mix.util.CollectionUtil;
+import tech.nmhillusion.n2mix.util.StringUtil;
 import tech.nmhillusion.pi_logger.PiLogger;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.regex.Pattern;
 
 public class MixLogger {
+    private final static Pattern IS_FORMATTED_PATTERN = Pattern.compile("%|(\\$\\w+(\\s|\\b))");
     private final Logger logger;
     private final Class<?> mClass;
     private final boolean isPiLogger;
@@ -64,8 +70,12 @@ public class MixLogger {
         return logger.getName();
     }
     
-    private Object doFormattedString(Object formatData, Object... params) {
-        if (formatData instanceof String) {
+    private Object[] doFormattedString(Object formatData, Object... params) {
+        final String trimmedFormatData = StringUtil.trimWithNull(formatData);
+        final boolean foundFormattedPattern = formatData instanceof String
+                && IS_FORMATTED_PATTERN.matcher(trimmedFormatData).find();
+        
+        if (foundFormattedPattern) {
             String formattedData = "";
             
             /// Mark: Format with %
@@ -96,88 +106,111 @@ public class MixLogger {
                 }
             }
             
-            return formattedData;
+            return new Object[]{formattedData};
+        } else {
+            final ArrayList<Object> paramObjects = new ArrayList<>(Collections.singleton(formatData));
+            paramObjects.addAll(Arrays.asList(params));
+            return paramObjects.toArray();
         }
-        return formatData;
     }
     
     public void info(Object data) {
-        infoFormat(data);
-    }
-    
-    public void infoFormat(Object data, Object... params) {
-        infoDetail(defaultMarker(), data, params);
-    }
-    
-    public void infoDetail(String marker, Object data, Object... params) {
-        if (!isPiLogger) {
-            logger.info(MarkerFactory.getMarker(marker), getTemplateLog(data), doFormattedString(data, params));
+        if (data instanceof String) {
+            infoFormat((String) data);
         } else {
-            logger.info(String.valueOf(data), params);
+            infoFormat(String.valueOf(data), data);
+        }
+    }
+    
+    public void infoFormat(String format_, Object... params) {
+        infoDetail(defaultMarker(), format_, params);
+    }
+    
+    public void infoDetail(String marker, String format_, Object... params) {
+        if (!isPiLogger) {
+            logger.info(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+        } else {
+            logger.info(format_, params);
         }
     }
     
     public void debug(Object data) {
-        debugFormat(data);
-    }
-    
-    public void debugFormat(Object data, Object... params) {
-        debugDetail(defaultMarker(), data, params);
-    }
-    
-    public void debugDetail(String marker, Object data, Object... params) {
-        if (!isPiLogger) {
-            logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(data), doFormattedString(data, params));
+        if (data instanceof String) {
+            debugFormat((String) data);
         } else {
-            logger.debug(String.valueOf(data), params);
+            debugFormat(String.valueOf(data), data);
+        }
+    }
+    
+    public void debugFormat(String format_, Object... params) {
+        debugDetail(defaultMarker(), format_, params);
+    }
+    
+    public void debugDetail(String marker, String format_, Object... params) {
+        if (!isPiLogger) {
+            logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+        } else {
+            logger.debug(format_, params);
         }
     }
     
     public void warn(Object data) {
-        warnFormat(data);
-    }
-    
-    public void warnFormat(Object data, Object... params) {
-        warnDetail(defaultMarker(), data, params);
-    }
-    
-    public void warnDetail(String marker, Object data, Object... params) {
-        if (!isPiLogger) {
-            logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(data), doFormattedString(data, params));
+        if (data instanceof String) {
+            warnFormat((String) data);
         } else {
-            logger.warn(String.valueOf(data), params);
+            warnFormat(String.valueOf(data), data);
+        }
+    }
+    
+    public void warnFormat(String format_, Object... params) {
+        warnDetail(defaultMarker(), format_, params);
+    }
+    
+    public void warnDetail(String marker, String format_, Object... params) {
+        if (!isPiLogger) {
+            logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+        } else {
+            logger.warn(format_, params);
         }
     }
     
     public void trace(Object data) {
-        traceFormat(data);
-    }
-    
-    public void traceFormat(Object data, Object... params) {
-        traceDetail(defaultMarker(), data, params);
-    }
-    
-    public void traceDetail(String marker, Object data, Object... params) {
-        if (!isPiLogger) {
-            logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(data), doFormattedString(data, params));
+        if (data instanceof String) {
+            traceFormat((String) data);
         } else {
-            logger.trace(String.valueOf(data), params);
+            traceFormat(String.valueOf(data), data);
+        }
+    }
+    
+    public void traceFormat(String format_, Object... params) {
+        traceDetail(defaultMarker(), format_, params);
+    }
+    
+    public void traceDetail(String marker, String format_, Object... params) {
+        if (!isPiLogger) {
+            logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+        } else {
+            logger.trace(format_, params);
         }
     }
     
     public void error(Object data) {
-        errorFormat(data);
-    }
-    
-    public void errorFormat(Object data, Object... params) {
-        errorDetail(defaultMarker(), data, params);
-    }
-    
-    public void errorDetail(String marker, Object data, Object... params) {
-        if (!isPiLogger) {
-            logger.error(MarkerFactory.getMarker(marker), getTemplateLog(data), doFormattedString(data, params));
+        if (data instanceof String) {
+            errorFormat((String) data);
         } else {
-            logger.error(String.valueOf(data), params);
+            errorFormat(String.valueOf(data), data);
+        }
+    }
+    
+    public void errorFormat(String format_, Object... params) {
+        errorDetail(defaultMarker(), format_, params);
+    }
+    
+    public void errorDetail(String marker, String format_, Object... params) {
+        if (!isPiLogger) {
+            logger.error(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+        } else {
+            logger.error(format_, params);
         }
     }
 }
