@@ -6,8 +6,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 
 class IOStreamUtilTest {
+
+    @Test
+    void nullStreamTest(){
+        Assertions.assertDoesNotThrow(() -> {
+            byte[] outData1 = IOStreamUtil.convertInputStreamToByteArray(null);
+
+            Assertions.assertEquals(0, outData1.length);
+        });
+    }
+
     @Test
     void convertStreamToByteArray() {
         byte[] out = new byte[0];

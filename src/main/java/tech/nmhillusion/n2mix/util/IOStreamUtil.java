@@ -1,5 +1,6 @@
 package tech.nmhillusion.n2mix.util;
 
+import jakarta.servlet.ServletInputStream;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import org.springframework.util.StreamUtils;
 
@@ -32,6 +33,18 @@ public abstract class IOStreamUtil {
     }
 
     public static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
+        if (inputStream instanceof ServletInputStream sis_) {
+            try {
+                if (!sis_.isReady()) {
+                    return new byte[0];
+                }
+            } catch (IllegalStateException ex) {
+                LogHelper.getLogger(IOStreamUtil.class).error("input stream is not ready to read. %s"
+                        .formatted(ex.getMessage()));
+                return new byte[0];
+            }
+        }
+
         return StreamUtils.copyToByteArray(inputStream);
     }
 
