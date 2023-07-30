@@ -30,6 +30,9 @@ public abstract class CastUtil {
             } else if (classToCast.isAssignableFrom(Double.class) || classToCast.isAssignableFrom(double.class)) {
                 final double doubleVal_ = Double.parseDouble(StringUtil.trimWithNull(value));
                 result = (T) (Double) doubleVal_;
+            } else if (classToCast.isAssignableFrom(Boolean.class) || classToCast.isAssignableFrom(boolean.class)) {
+                final boolean booleanVal_ = Boolean.parseBoolean(StringUtil.trimWithNull(value));
+                result = (T) (Boolean) booleanVal_;
             } else if (classToCast.equals(String.class)) {
                 result = classToCast.cast(StringUtil.trimWithNull(value));
             } else {

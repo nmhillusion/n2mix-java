@@ -15,3 +15,7 @@ numeric_value:
   long_value2: 900_000
   double_value: 8009.001
   double_value2: 8_009.001
+
+binary_value:
+  T: true
+  F: false

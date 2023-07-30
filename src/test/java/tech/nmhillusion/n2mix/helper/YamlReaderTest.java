@@ -6,8 +6,7 @@ import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 class YamlReaderTest {
@@ -146,6 +145,40 @@ class YamlReaderTest {
                     final Double clzDoubleVal = yamlReader.getProperty("numeric_value.double_value2", Double.class);
                     LogHelper.getLogger(this).info("double val with class type: %s".formatted(clzDoubleVal));
                     assertEquals(8009.001, clzDoubleVal);
+                }
+            }
+        });
+    }
+    
+    @Test
+    void testWithBinary() {
+        Assertions.assertDoesNotThrow(() -> {
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data-test/vehicle.yml")) {
+                final YamlReader yamlReader = new YamlReader(inputStream);
+                
+                {
+                    final Boolean clzTrueVal = yamlReader.getProperty("binary_value.T", Boolean.class);
+                    LogHelper.getLogger(this).info("boolean val with class type: %s".formatted(clzTrueVal));
+                    assertEquals(true, clzTrueVal);
+                }
+                
+                {
+                    final boolean trueVal = yamlReader.getProperty("binary_value.T", boolean.class);
+                    LogHelper.getLogger(this).info("boolean val with primitive type: %s".formatted(trueVal));
+                    assertTrue(trueVal);
+                }
+                
+                //////////////////////////////////////////
+                {
+                    final Boolean clzFalseVal = yamlReader.getProperty("binary_value.F", Boolean.class);
+                    LogHelper.getLogger(this).info("boolean val with class type: %s".formatted(clzFalseVal));
+                    assertEquals(false, clzFalseVal);
+                }
+                
+                {
+                    final boolean falseVal = yamlReader.getProperty("binary_value.F", boolean.class);
+                    LogHelper.getLogger(this).info("boolean val with primitive type: %s".formatted(falseVal));
+                    assertFalse(falseVal);
                 }
             }
         });
