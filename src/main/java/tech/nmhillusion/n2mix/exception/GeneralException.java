@@ -1,6 +1,6 @@
 package tech.nmhillusion.n2mix.exception;
 
-import tech.nmhillusion.n2mix.model.ApiErrorResponse;
+import tech.nmhillusion.n2mix.constant.ErrorType;
 
 /**
  * date: 2022-11-19
@@ -9,20 +9,37 @@ import tech.nmhillusion.n2mix.model.ApiErrorResponse;
  */
 
 public class GeneralException extends Exception {
-
+    private final ErrorType errorType;
+    
+    
     public GeneralException(String message) {
-        super(message);
+        this(ErrorType.GENERAL_ERROR, message);
     }
-
+    
     public GeneralException(Throwable throwable) {
+        this(ErrorType.GENERAL_ERROR, throwable);
+    }
+    
+    public GeneralException(String message, Throwable cause) {
+        this(ErrorType.GENERAL_ERROR, message, cause);
+    }
+    
+    public GeneralException(ErrorType errorType, String message) {
+        super(message);
+        this.errorType = errorType;
+    }
+    
+    public GeneralException(ErrorType errorType, Throwable throwable) {
         super(throwable);
+        this.errorType = errorType;
     }
-
-    public GeneralException(ApiErrorResponse errorResponse) {
-        super(errorResponse.getErrorName());
+    
+    public GeneralException(ErrorType errorType, String message, Throwable cause) {
+        super(message, cause);
+        this.errorType = errorType;
     }
-
-    public GeneralException(ApiErrorResponse errorResponse, Throwable throwable) {
-        super(errorResponse.getErrorName(), throwable);
+    
+    public ErrorType getErrorType() {
+        return errorType;
     }
 }
