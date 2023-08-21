@@ -35,12 +35,12 @@ public class ConnectionDbTest {
     @Test
     void testConnectDb() {
         Assertions.assertDoesNotThrow(() -> {
+
+//            System.getenv().forEach((key, value) -> {
+//                getLogger(this).info("[env var] %s => %s".formatted(key, value));
+//            });
             
-            System.getenv().forEach((key, value) -> {
-                getLogger(this).info("[env var] %s => %s".formatted(key, value));
-            });
-            
-            final String githubRunID = System.getenv("github.run_id");
+            final String githubRunID = System.getenv("GITHUB_RUN_ID");
             
             if (!StringValidator.isBlank(githubRunID)) {
                 getLogger(this).warn("Ignore this test, because there is no Oracle database in github action!");
