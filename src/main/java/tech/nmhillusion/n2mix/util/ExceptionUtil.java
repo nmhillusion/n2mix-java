@@ -1,6 +1,7 @@
 package tech.nmhillusion.n2mix.util;
 
 import org.springframework.lang.NonNull;
+import tech.nmhillusion.n2mix.exception.AppRuntimeException;
 import tech.nmhillusion.n2mix.exception.GeneralException;
 
 import java.sql.SQLException;
@@ -16,21 +17,21 @@ public abstract class ExceptionUtil {
             finalException = new GeneralException("Exception is null");
         }
         
-        while (finalException.getCause() instanceof GeneralException) {
+        while (finalException.getCause() instanceof AppRuntimeException) {
             finalException = finalException.getCause();
         }
         return finalException;
     }
     
-    public static GeneralException throwException(final Throwable ex) {
+    public static AppRuntimeException throwException(final Throwable ex) {
         final Throwable finalException = getFurthestGeneralException(ex);
         
         if (finalException instanceof SQLException) {
             return throwParsedSqlException(finalException);
         } else if (finalException instanceof GeneralException) {
-            return (GeneralException) finalException;
+            return (AppRuntimeException) finalException;
         } else {
-            return new GeneralException(ex);
+            return new AppRuntimeException(ex);
         }
     }
     
@@ -44,7 +45,7 @@ public abstract class ExceptionUtil {
         return message;
     }
     
-    public static GeneralException throwParsedSqlException(final Throwable ex) {
+    public static AppRuntimeException throwParsedSqlException(final Throwable ex) {
         if (ex instanceof SQLException) {
             String message = ex.getMessage();
             
@@ -53,14 +54,14 @@ public abstract class ExceptionUtil {
             if (message.contains(":")) {
                 message = message.substring(message.indexOf(":") + 1);
             }
-            return new GeneralException(message.trim(), ex);
+            return new AppRuntimeException(message.trim(), ex);
         } else {
             final Throwable finalException = getFurthestGeneralException(ex);
             
-            if (finalException instanceof GeneralException) {
-                return (GeneralException) finalException;
+            if (finalException instanceof AppRuntimeException) {
+                return (AppRuntimeException) finalException;
             } else {
-                return new GeneralException(ex.getMessage(), ex);
+                return new AppRuntimeException(ex.getMessage(), ex);
             }
         }
     }
