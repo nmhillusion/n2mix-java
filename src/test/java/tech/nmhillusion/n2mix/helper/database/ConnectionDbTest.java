@@ -9,7 +9,6 @@ import tech.nmhillusion.n2mix.helper.database.config.DataSourceProperties;
 import tech.nmhillusion.n2mix.helper.database.config.DatabaseConfigHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import javax.sql.DataSource;
@@ -36,13 +35,18 @@ public class ConnectionDbTest {
     @Test
     void testConnectDb() {
         Assertions.assertDoesNotThrow(() -> {
+            
+            System.getenv().forEach((key, value) -> {
+                getLogger(this).info("[env var] %s => %s".formatted(key, value));
+            });
+            
             final String githubRunID = System.getenv("github.run_id");
             
             if (!StringValidator.isBlank(githubRunID)) {
                 getLogger(this).warn("Ignore this test, because there is no Oracle database in github action!");
                 return;
             } else {
-                LogHelper.getLogger(this).info("Localhost Environment ==> Running testing database");
+                getLogger(this).info("Localhost Environment ==> Running testing database");
             }
             
             final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
