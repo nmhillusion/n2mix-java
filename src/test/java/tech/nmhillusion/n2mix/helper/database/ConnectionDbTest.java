@@ -2,6 +2,7 @@ package tech.nmhillusion.n2mix.helper.database;
 
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.constant.CommonConfigDataSourceValue;
 import tech.nmhillusion.n2mix.helper.YamlReader;
@@ -17,6 +18,7 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
@@ -26,6 +28,28 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 
 public class ConnectionDbTest {
+    private static boolean isGitHubAction;
+    
+    @BeforeAll
+    static void init() {
+        final String gitHubRunId = getGitHubRunId();
+        isGitHubAction = !StringValidator.isBlank(gitHubRunId);
+        
+        if (isGitHubAction) {
+            getLogger(ConnectionDbTest.class).warn("Ignore this test, because there is no Oracle database in github action!");
+        } else {
+            getLogger(ConnectionDbTest.class).info("Localhost Environment ==> Running testing database");
+        }
+    }
+    
+    private static String getGitHubRunId() {
+        //            System.getenv().forEach((key, value) -> {
+//                getLogger(this).info("[env var] %s => %s".formatted(key, value));
+//            });
+        
+        return System.getenv("GITHUB_RUN_ID");
+    }
+    
     private <T> T getDatabaseConfig(String configKey, Class<T> class2Cast) throws IOException {
         try (final InputStream dbStream = getClass().getClassLoader().getResourceAsStream("app-config/database.yml")) {
             return new YamlReader(dbStream).getProperty(configKey, class2Cast);
@@ -34,21 +58,9 @@ public class ConnectionDbTest {
     
     @Test
     void testConnectDb() {
+        assumeFalse(isGitHubAction);
+        
         Assertions.assertDoesNotThrow(() -> {
-
-//            System.getenv().forEach((key, value) -> {
-//                getLogger(this).info("[env var] %s => %s".formatted(key, value));
-//            });
-            
-            final String githubRunID = System.getenv("GITHUB_RUN_ID");
-            
-            if (!StringValidator.isBlank(githubRunID)) {
-                getLogger(this).warn("Ignore this test, because there is no Oracle database in github action!");
-                return;
-            } else {
-                getLogger(this).info("Localhost Environment ==> Running testing database");
-            }
-            
             final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
             
             final String dbUrl = getDatabaseConfig("dataSource.url", String.class);
