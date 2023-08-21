@@ -98,7 +98,7 @@ public class RequestHttpBuilder {
         } else if (JSON.equals(mediaType)) {
             data = new JSONObject(requestBodyData).toString();
             return RequestBody.create(data, mediaType.getValue());
-        } else if (FORM_DATA.equals(mediaType)) {
+        } else if (MULTIPART_FORM_DATA.equals(mediaType)) {
             MultipartBody.Builder builder = new MultipartBody.Builder();
             builder.setType(MultipartBody.FORM);
 

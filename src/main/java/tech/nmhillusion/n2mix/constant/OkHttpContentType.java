@@ -10,7 +10,7 @@ import okhttp3.MediaType;
 
 public enum OkHttpContentType {
     X_WWW_FORM_URLENCODED(ContentType.FORM_URLENCODED),
-    FORM_DATA(ContentType.FORM_DATA),
+    MULTIPART_FORM_DATA(ContentType.MULTIPART_FORM_DATA),
     JSON(ContentType.JSON);
 
     private final MediaType value;
