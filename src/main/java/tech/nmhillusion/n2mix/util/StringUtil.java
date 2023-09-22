@@ -110,6 +110,7 @@ public abstract class StringUtil {
         final String[] parts = snakeCase.split("_");
         return Stream.of(parts)
                 .filter(Predicate.not(StringValidator::isBlank))
+                .map(String::toLowerCase)
                 .map(StringUtil::convertPascalCaseFromCamelCase)
                 .collect(Collectors.joining());
     }
