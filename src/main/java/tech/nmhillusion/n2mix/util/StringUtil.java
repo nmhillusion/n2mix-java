@@ -1,15 +1,15 @@
 package tech.nmhillusion.n2mix.util;
 
-import tech.nmhillusion.n2mix.validator.StringValidator;
 import org.springframework.lang.Nullable;
 import tech.nmhillusion.n2mix.type.FunctionalFactory;
+import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static tech.nmhillusion.n2mix.type.FunctionalFactory.not;
+import java.util.stream.Stream;
 
 /**
  * date: 2022-11-19
@@ -94,6 +94,24 @@ public abstract class StringUtil {
         String remainString = pascalCase.substring(1);
 
         return firstChar.toLowerCase() + remainString;
+    }
+
+    /**
+     * one_two -> OneTwo
+     *
+     * @param snakeCase
+     * @return pascalCase of input string
+     */
+    public static String convertPascalCaseFromSnakeCase(String snakeCase) {
+        if (StringValidator.isBlank(snakeCase)) {
+            return EMPTY;
+        }
+
+        final String[] parts = snakeCase.split("_");
+        return Stream.of(parts)
+                .filter(Predicate.not(StringValidator::isBlank))
+                .map(StringUtil::convertPascalCaseFromCamelCase)
+                .collect(Collectors.joining());
     }
 
     public static String truncate(String value, int maxLength) {
