@@ -6,6 +6,7 @@ import tech.nmhillusion.n2mix.exception.AppRuntimeException;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 
 /**
  * created by: nmhillusion
@@ -24,16 +25,20 @@ class ExceptionUtilTest {
 
     @Test
     void throwParsedSqlException() {
-    }
-
-    private void throwExceptionMethod() throws FileNotFoundException {
-        throw new FileNotFoundException("Cannot find the file with name: data.txt");
+        final String sqlErrorMessage = "invalid number";
+        try {
+            throw new SQLException("ORA-01722: " + sqlErrorMessage);
+        } catch (Throwable ex) {
+            final AppRuntimeException sqlException = ExceptionUtil.throwParsedSqlException(ex);
+            Assertions.assertNotNull(sqlException);
+            Assertions.assertEquals(sqlErrorMessage, sqlException.getMessage());
+        }
     }
 
     @Test
     void convertThrowableToString() {
         try {
-            throwExceptionMethod();
+            throw new FileNotFoundException("Cannot find the file with name: data.txt");
         } catch (Throwable ex) {
             Assertions.assertDoesNotThrow(() -> {
                 final String stackTraceContent = ExceptionUtil.convertThrowableToString(ex);
