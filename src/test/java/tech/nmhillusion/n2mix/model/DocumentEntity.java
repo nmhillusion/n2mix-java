@@ -2,8 +2,6 @@ package tech.nmhillusion.n2mix.model;
 
 import tech.nmhillusion.n2mix.type.Stringeable;
 
-import java.util.Date;
-
 /**
  * created by: nmhillusion
  * <p>
@@ -13,7 +11,8 @@ public class DocumentEntity extends Stringeable {
     private String id;
     private String title;
     private String insertBy;
-    private Date insertDataTime;
+    private String insertDataTime;
+    private String formattedInsertDataTime;
 
     public String getId() {
         return id;
@@ -42,12 +41,21 @@ public class DocumentEntity extends Stringeable {
         return this;
     }
 
-    public Date getInsertDataTime() {
+    public String getInsertDataTime() {
         return insertDataTime;
     }
 
-    public DocumentEntity setInsertDataTime(Date insertDataTime) {
+    public DocumentEntity setInsertDataTime(String insertDataTime) {
         this.insertDataTime = insertDataTime;
+        return this;
+    }
+
+    public String getFormattedInsertDataTime() {
+        return formattedInsertDataTime;
+    }
+
+    public DocumentEntity setFormattedInsertDataTime(String formattedInsertDataTime) {
+        this.formattedInsertDataTime = formattedInsertDataTime;
         return this;
     }
 }

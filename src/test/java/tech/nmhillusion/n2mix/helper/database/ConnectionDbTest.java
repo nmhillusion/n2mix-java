@@ -13,6 +13,8 @@ import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
+import tech.nmhillusion.n2mix.util.CastUtil;
+import tech.nmhillusion.n2mix.util.DateUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import javax.sql.DataSource;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
@@ -88,10 +91,24 @@ public class ConnectionDbTest {
                             while (resultSet.next()) {
                                 getLogger(this).info("document{ ID = %s, Title = %s }".formatted(resultSet.getString("id"), resultSet.getString("title")));
 
-                                final DocumentEntity entity_ = new ResultSetObjectBuilder<DocumentEntity>()
+                                final DocumentEntity entity_ = new ResultSetObjectBuilder()
                                         .setResultSet(resultSet)
-                                        .setObjectBuilderClass(DocumentEntity.class)
-                                        .build();
+                                        .addCustomConverters("title", raw_ ->
+                                                CastUtil
+                                                        .safeCast(raw_, String.class)
+                                                        .toUpperCase()
+                                        )
+                                        .addCustomConverters("insert_data_time", raw_ ->
+                                                DateUtil.format(
+                                                        CastUtil.safeCast(raw_, Date.class)
+                                                        , "MMM dd yyyy")
+                                        )
+                                        .build(DocumentEntity.class)
+                                        .setFormattedInsertDataTime(
+                                                DateUtil.format(resultSet.getTimestamp("insert_data_time"),
+                                                        "dd/MM/yyyy HH:mm:ss"
+                                                )
+                                        );
 
                                 LogHelper.getLogger(this).info("document item: " + entity_);
                             }
