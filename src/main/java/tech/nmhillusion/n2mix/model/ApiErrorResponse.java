@@ -1,8 +1,9 @@
 package tech.nmhillusion.n2mix.model;
 
-import tech.nmhillusion.n2mix.util.DateUtil;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import tech.nmhillusion.n2mix.util.DateUtil;
+import tech.nmhillusion.n2mix.util.ExceptionUtil;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -21,6 +22,21 @@ public class ApiErrorResponse implements Serializable {
         this.message = message;
         this.timestampPattern = "dd/MM/yyyy HH:mm:ss";
         this.timestamp = DateUtil.format(calendar.getTime(), timestampPattern);
+    }
+
+    public static ApiErrorResponse fromException(Throwable ex) {
+        return fromException(
+                HttpStatus.BAD_REQUEST
+                , ex
+        );
+    }
+
+    public static ApiErrorResponse fromException(HttpStatus httpStatus, Throwable ex) {
+        return new ApiErrorResponse(
+                httpStatus
+                , ex.getClass().getName()
+                , ExceptionUtil.throwException(ex).getMessage()
+        );
     }
 
     public JSONObject toJSON() {
