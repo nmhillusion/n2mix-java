@@ -25,6 +25,7 @@ import java.util.Map;
 public class ResultSetObjectBuilder {
     private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
     private ResultSet resultSet;
+    private boolean isIgnoreWarningMissingField = false;
 
     public ResultSet getResultSet() {
         return resultSet;
@@ -45,6 +46,11 @@ public class ResultSetObjectBuilder {
         }
 
         this.customConverters.put(columnName.toLowerCase(), customConverter);
+        return this;
+    }
+
+    public ResultSetObjectBuilder setIsIgnoreWarningMissingField(boolean ignoreWarningMissingField) {
+        isIgnoreWarningMissingField = ignoreWarningMissingField;
         return this;
     }
 
@@ -76,7 +82,9 @@ public class ResultSetObjectBuilder {
 
                 method_.invoke(instance_, convertedObject);
             } catch (Throwable ex) {
-                LogHelper.getLogger(this).warn("No field with column name [%s]. Error: %s".formatted(columnName, ex));
+                if (!isIgnoreWarningMissingField) {
+                    LogHelper.getLogger(this).warn("No field with column name [%s]. Error: %s".formatted(columnName, ex));
+                }
             }
         }
         return instance_;
