@@ -2,7 +2,6 @@ package tech.nmhillusion.n2mix.helper.database.result;
 
 import tech.nmhillusion.n2mix.annotation.IgnoredField;
 import tech.nmhillusion.n2mix.helper.database.query.ExtractResultToPage;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.StringUtil;
@@ -13,11 +12,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
+
+import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * created by: nmhillusion
@@ -25,6 +23,7 @@ import java.util.stream.Stream;
  * created date: 2023-09-22
  */
 public class ResultSetObjectBuilder {
+    private static final Map<String, List<Field>> FIELD_OF_CLASSES_CACHE = new TreeMap<>();
     private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
     private ResultSet resultSet;
     private boolean isIgnoreWarningMissingField = true;
@@ -66,11 +65,20 @@ public class ResultSetObjectBuilder {
     }
 
     private <T> List<Field> getFieldsOfClass(Class<T> mainClass) {
-        return Stream.of(
+        if (FIELD_OF_CLASSES_CACHE.containsKey(mainClass.getName())) {
+            return FIELD_OF_CLASSES_CACHE.get(mainClass.getName());
+        }
+
+        getLogger(this).debug("really read fields of class " + mainClass.getName());
+        final List<Field> fieldList = Stream.of(
                         mainClass.getDeclaredFields()
                 )
                 .filter(it -> !it.isAnnotationPresent(IgnoredField.class))
                 .toList();
+
+        FIELD_OF_CLASSES_CACHE.put(mainClass.getName(), fieldList);
+
+        return fieldList;
     }
 
     private Optional<String> getColumnNameFromField(Field field_, List<String> allColumnNames) {
@@ -124,7 +132,7 @@ public class ResultSetObjectBuilder {
                 field_.set(instance_, convertedObject);
             } catch (Throwable ex) {
                 if (!isIgnoreWarningMissingField) {
-                    LogHelper.getLogger(this).warn("No column with field name [%s]. Error: %s".formatted(field_.getName(), ex));
+                    getLogger(this).warn("No column with field name [%s]. Error: %s".formatted(field_.getName(), ex));
                 }
             }
         }
