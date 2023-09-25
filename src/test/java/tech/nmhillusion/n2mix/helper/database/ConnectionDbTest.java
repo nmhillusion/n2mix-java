@@ -103,7 +103,7 @@ public class ConnectionDbTest {
                                                         CastUtil.safeCast(raw_, Date.class)
                                                         , "MMM dd yyyy")
                                         )
-                                        .setIsIgnoreWarningMissingField(true)
+                                        .setIsIgnoreWarningMissingField(false)
                                         .build(DocumentEntity.class)
                                         .setFormattedInsertDataTime(
                                                 DateUtil.format(resultSet.getTimestamp("insert_data_time"),

@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * created by: nmhillusion
@@ -62,17 +63,36 @@ public class ResultSetObjectBuilder {
         }
     }
 
+    private <T> List<Field> getFieldsOfClass(Class<T> mainClass) {
+        return List.of(
+                mainClass.getDeclaredFields()
+        );
+    }
+
+    private Optional<String> getColumnNameFromField(Field field_, List<String> allColumnNames) {
+        final String fieldName = field_.getName();
+        final String convertedFieldNameCol = StringUtil.convertSnakeCaseFromCamelCase(fieldName);
+
+        return allColumnNames.stream()
+                .filter(it -> it.equalsIgnoreCase(convertedFieldNameCol))
+                .findFirst();
+    }
+
     private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException {
-        final List<String> allColumnNames = ExtractResultToPage.getAllColumnNames(resultSet);
+        final List<String> allColumnNames = ExtractResultToPage.getAllColumnNames(resultSet)
+                .stream()
+                .map(it -> StringUtil.trimWithSpecificCharacter(it, "_"))
+                .toList();
+        final List<Field> fieldsOfClass = getFieldsOfClass(mainClass);
 
-        for (String columnName : allColumnNames) {
+        for (Field field_ : fieldsOfClass) {
             try {
-                columnName = columnName.toLowerCase();
+                final Optional<String> columnNameFromFieldOpt = getColumnNameFromField(field_, allColumnNames);
+                if (columnNameFromFieldOpt.isEmpty()) {
+                    throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
+                }
 
-                final String fieldNameInPascalCase = StringUtil.convertPascalCaseFromSnakeCase(columnName);
-                final String fieldNameInCamelCase = StringUtil.convertCamelCaseFromPascalCase(fieldNameInPascalCase);
-                final Field field_ = mainClass.getDeclaredField(fieldNameInCamelCase);
-
+                final String columnName = columnNameFromFieldOpt.get();
                 final Object rawObject = resultSet.getObject(columnName);
                 final Object convertedObject = !customConverters.containsKey(columnName)
                         ? CastUtil.safeCast(rawObject, field_.getType())
@@ -82,7 +102,7 @@ public class ResultSetObjectBuilder {
                 field_.set(instance_, convertedObject);
             } catch (Throwable ex) {
                 if (!isIgnoreWarningMissingField) {
-                    LogHelper.getLogger(this).warn("No field with column name [%s]. Error: %s".formatted(columnName, ex));
+                    LogHelper.getLogger(this).warn("No column with field name [%s]. Error: %s".formatted(field_.getName(), ex));
                 }
             }
         }
