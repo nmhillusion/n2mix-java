@@ -10,7 +10,6 @@ import tech.nmhillusion.n2mix.validator.StringValidator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -73,14 +72,14 @@ public class ResultSetObjectBuilder {
                 final String fieldNameInPascalCase = StringUtil.convertPascalCaseFromSnakeCase(columnName);
                 final String fieldNameInCamelCase = StringUtil.convertCamelCaseFromPascalCase(fieldNameInPascalCase);
                 final Field field_ = mainClass.getDeclaredField(fieldNameInCamelCase);
-                final Method method_ = mainClass.getMethod("set" + fieldNameInPascalCase, field_.getType());
 
                 final Object rawObject = resultSet.getObject(columnName);
                 final Object convertedObject = !customConverters.containsKey(columnName)
                         ? CastUtil.safeCast(rawObject, field_.getType())
                         : customConverters.get(columnName).throwableApply(rawObject);
 
-                method_.invoke(instance_, convertedObject);
+                field_.setAccessible(true);
+                field_.set(instance_, convertedObject);
             } catch (Throwable ex) {
                 if (!isIgnoreWarningMissingField) {
                     LogHelper.getLogger(this).warn("No field with column name [%s]. Error: %s".formatted(columnName, ex));
