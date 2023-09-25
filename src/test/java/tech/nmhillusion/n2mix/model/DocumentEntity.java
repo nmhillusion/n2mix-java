@@ -1,5 +1,6 @@
 package tech.nmhillusion.n2mix.model;
 
+import tech.nmhillusion.n2mix.annotation.IgnoredField;
 import tech.nmhillusion.n2mix.type.Stringeable;
 
 /**
@@ -12,6 +13,7 @@ public class DocumentEntity extends Stringeable {
     private String title;
     private String insertBy;
     private String insertDataTime;
+    @IgnoredField
     private String formattedInsertDataTime;
 
 //    public String getId() {
