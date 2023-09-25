@@ -82,6 +82,20 @@ public class ResultSetObjectBuilder {
                 .findFirst();
     }
 
+    private Optional<ThrowableFunction<Object, Object>> getCustomConverterOfColumn(String columnName) {
+        if (StringValidator.isBlank(columnName)) {
+            return Optional.empty();
+        }
+
+        final Optional<String> converterColumnNameOpt = customConverters.keySet()
+                .stream()
+                .filter(it -> columnName.equalsIgnoreCase(String.valueOf(it)))
+                .findFirst();
+
+        return converterColumnNameOpt.map(customConverters::get);
+
+    }
+
     private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException {
         final List<String> allColumnNames = ExtractResultToPage.getAllColumnNames(resultSet)
                 .stream()
@@ -98,9 +112,13 @@ public class ResultSetObjectBuilder {
 
                 final String columnName = columnNameFromFieldOpt.get();
                 final Object rawObject = resultSet.getObject(columnName);
-                final Object convertedObject = !customConverters.containsKey(columnName)
+
+                final Optional<ThrowableFunction<Object, Object>> customConverterOfColumn = getCustomConverterOfColumn(columnName);
+                final Object convertedObject = customConverterOfColumn.isEmpty()
                         ? CastUtil.safeCast(rawObject, field_.getType())
-                        : customConverters.get(columnName).throwableApply(rawObject);
+                        : customConverterOfColumn
+                        .get()
+                        .throwableApply(rawObject);
 
                 field_.setAccessible(true);
                 field_.set(instance_, convertedObject);
