@@ -39,4 +39,16 @@ class StringUtilTest {
         assertEquals("", StringUtil.convertPascalCaseFromSnakeCase("   "));
         assertEquals("", StringUtil.convertPascalCaseFromSnakeCase(" "));
     }
+
+    @Test
+    void testConvertSnakeCaseFromCamelCase() {
+        assertEquals("insert_data_time", StringUtil.convertSnakeCaseFromCamelCase("insertDataTime"));
+        assertEquals("insert_data_time", StringUtil.convertSnakeCaseFromCamelCase("_insertDataTime"));
+        assertEquals("insert_data_time", StringUtil.convertSnakeCaseFromCamelCase("insertDataTime__"));
+
+        assertEquals("distance_of_a_second", StringUtil.convertSnakeCaseFromCamelCase("distanceOfASecond"));
+        assertEquals("age", StringUtil.convertSnakeCaseFromCamelCase("age"));
+        assertEquals("is_male", StringUtil.convertSnakeCaseFromCamelCase("isMale"));
+        assertEquals("is_male", StringUtil.convertSnakeCaseFromCamelCase("IsMale"));
+    }
 }

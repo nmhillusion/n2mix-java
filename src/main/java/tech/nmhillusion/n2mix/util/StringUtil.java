@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -113,6 +115,30 @@ public abstract class StringUtil {
                 .map(String::toLowerCase)
                 .map(StringUtil::convertPascalCaseFromCamelCase)
                 .collect(Collectors.joining());
+    }
+
+    public static String convertSnakeCaseFromCamelCase(String camelCase) {
+        if (StringValidator.isBlank(camelCase)) {
+            return EMPTY;
+        }
+
+        camelCase = camelCase.replaceAll("[^a-zA-Z0-9]", "");
+
+        final Pattern pattern_ = Pattern.compile("([A-Z]{0,1}[a-z]*)[A-Z]{0,1}?");
+        final Matcher matcher_ = pattern_.matcher(camelCase);
+
+        final List<String> parts_ = new ArrayList<>();
+
+        while (matcher_.find()) {
+            parts_.add(matcher_.group(1));
+        }
+
+        return parts_
+                .stream()
+                .filter(Predicate.not(StringValidator::isBlank))
+                .map(String::toLowerCase)
+                .collect(Collectors.joining("_"));
+
     }
 
     public static String truncate(String value, int maxLength) {
