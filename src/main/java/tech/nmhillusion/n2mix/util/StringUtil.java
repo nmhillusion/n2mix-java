@@ -169,6 +169,20 @@ public abstract class StringUtil {
         }
     }
 
+    public static String trimWithSpecificCharacter(String input_, String specificCharacter) {
+        if (StringValidator.isBlank(input_)) {
+            return EMPTY;
+        }
+
+        while (input_.startsWith(specificCharacter)) {
+            input_ = input_.replaceFirst(specificCharacter + "*", "");
+        }
+        while (input_.endsWith(specificCharacter) && 1 < input_.length()) {
+            input_ = input_.substring(0, input_.length() - 1);
+        }
+        return input_;
+    }
+
     public static String rebuildNumberIdsFromString(String input) {
         final List<String> result = new ArrayList<>();
         if (!StringValidator.isBlank(input)) {

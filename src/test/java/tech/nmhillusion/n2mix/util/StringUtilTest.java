@@ -51,4 +51,18 @@ class StringUtilTest {
         assertEquals("is_male", StringUtil.convertSnakeCaseFromCamelCase("isMale"));
         assertEquals("is_male", StringUtil.convertSnakeCaseFromCamelCase("IsMale"));
     }
+
+    @Test
+    void testTrimWithSpecificCharacter() {
+        assertEquals("abc", StringUtil.trimWithSpecificCharacter("__abc_", "_"));
+        assertEquals("abc", StringUtil.trimWithSpecificCharacter("_abc_", "_"));
+        assertEquals("abc", StringUtil.trimWithSpecificCharacter("__abc__", "_"));
+        assertEquals("abc", StringUtil.trimWithSpecificCharacter("abc_", "_"));
+        assertEquals("abc", StringUtil.trimWithSpecificCharacter("abc", "_"));
+
+        assertEquals("", StringUtil.trimWithSpecificCharacter("_", "_"));
+        assertEquals("", StringUtil.trimWithSpecificCharacter("__", "_"));
+        assertEquals("insert_data_time", StringUtil.trimWithSpecificCharacter("insert_data_time", "_"));
+        assertEquals("insert_data_time", StringUtil.trimWithSpecificCharacter("insert_data_time_", "_"));
+    }
 }
