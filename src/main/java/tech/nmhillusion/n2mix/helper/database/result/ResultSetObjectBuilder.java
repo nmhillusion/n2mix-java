@@ -25,7 +25,7 @@ import java.util.Map;
 public class ResultSetObjectBuilder {
     private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
     private ResultSet resultSet;
-    private boolean isIgnoreWarningMissingField = false;
+    private boolean isIgnoreWarningMissingField = true;
 
     public ResultSet getResultSet() {
         return resultSet;
