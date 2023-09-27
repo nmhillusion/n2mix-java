@@ -25,6 +25,8 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 public class ResultSetObjectBuilder {
     private static final Map<String, List<Field>> FIELD_OF_CLASSES_CACHE = new TreeMap<>();
     private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
+    private final List<String> allColumnNamesCache = new ArrayList<>();
+    private final Map<String, Optional<String>> fieldColumnNameMapCache = new TreeMap<>();
     private ResultSet resultSet;
     private boolean isIgnoreWarningMissingField = true;
 
@@ -83,11 +85,20 @@ public class ResultSetObjectBuilder {
 
     private Optional<String> getColumnNameFromField(Field field_, List<String> allColumnNames) {
         final String fieldName = field_.getName();
+
+        if (fieldColumnNameMapCache.containsKey(fieldName)) {
+            return fieldColumnNameMapCache.get(fieldName);
+        }
+
         final String convertedFieldNameCol = StringUtil.convertSnakeCaseFromCamelCase(fieldName);
 
-        return allColumnNames.stream()
+        final Optional<String> columnNameOpt = allColumnNames.stream()
                 .filter(it -> it.equalsIgnoreCase(convertedFieldNameCol))
                 .findFirst();
+
+        fieldColumnNameMapCache.put(fieldName, columnNameOpt);
+
+        return columnNameOpt;
     }
 
     private Optional<ThrowableFunction<Object, Object>> getCustomConverterOfColumn(String columnName) {
@@ -104,11 +115,21 @@ public class ResultSetObjectBuilder {
 
     }
 
+    private List<String> getAllColumnNames(ResultSet resultSet) throws SQLException {
+        if (this.allColumnNamesCache.isEmpty()) {
+            this.allColumnNamesCache.addAll(
+                    ExtractResultToPage.getAllColumnNames(resultSet)
+                            .stream()
+                            .map(it -> StringUtil.trimWithSpecificCharacter(it, "_"))
+                            .toList()
+            );
+        }
+
+        return this.allColumnNamesCache;
+    }
+
     private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException {
-        final List<String> allColumnNames = ExtractResultToPage.getAllColumnNames(resultSet)
-                .stream()
-                .map(it -> StringUtil.trimWithSpecificCharacter(it, "_"))
-                .toList();
+        final List<String> allColumnNames = getAllColumnNames(resultSet);
         final List<Field> fieldsOfClass = getFieldsOfClass(mainClass);
 
         for (Field field_ : fieldsOfClass) {
