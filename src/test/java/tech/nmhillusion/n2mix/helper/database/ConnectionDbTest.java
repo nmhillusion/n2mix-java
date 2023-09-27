@@ -104,7 +104,7 @@ public class ConnectionDbTest {
                                                         , "MMM dd yyyy")
                                         )
                                         .setIsIgnoreWarningMissingField(false)
-                                        .build(DocumentEntity.class)
+                                        .buildCurrent(DocumentEntity.class)
                                         .setFormattedInsertDataTime(
                                                 DateUtil.format(resultSet.getTimestamp("insert_data_time"),
                                                         "dd/MM/yyyy HH:mm:ss"

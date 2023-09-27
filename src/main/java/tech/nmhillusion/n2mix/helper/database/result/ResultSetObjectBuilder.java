@@ -140,12 +140,26 @@ public class ResultSetObjectBuilder {
     }
 
 
-    public <T> T build(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+    public <T> T buildCurrent(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
         if (null == mainClass) {
             return null;
         }
 
         final T instance_ = newInstanceWithNoArgs(mainClass);
         return fillDataForInstance(mainClass, instance_, resultSet);
+    }
+
+    public <T> List<T> buildList(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+        final List<T> resultList = new ArrayList<>();
+
+        if (null != mainClass) {
+            if (resultSet.next()) {
+                resultList.add(
+                        buildCurrent(mainClass)
+                );
+            }
+        }
+
+        return resultList;
     }
 }
