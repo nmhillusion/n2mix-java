@@ -1,18 +1,15 @@
 package tech.nmhillusion.n2mix.helper.database.query;
 
+import org.springframework.lang.NonNull;
 import tech.nmhillusion.n2mix.model.database.DbArgumentModel;
 import tech.nmhillusion.n2mix.model.database.DbInputModel;
 import tech.nmhillusion.n2mix.model.database.DbOutParameterModel;
 import tech.nmhillusion.n2mix.util.DateUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
-import org.springframework.lang.NonNull;
 
 import java.sql.CallableStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
@@ -27,7 +24,7 @@ public class SqlCallableStatementBuilder {
     private final LinkedList<DbInputModel> dbInputModels = new LinkedList<>();
     private String functionName;
     private String procedureName;
-    private int returnType;
+    private Optional<Integer> returnTypeOpt = Optional.empty();
     private boolean hasSetCallType = false;
 
     public SqlCallableStatementBuilder(ConnectionWrapper connectionWrapper) {
@@ -62,8 +59,8 @@ public class SqlCallableStatementBuilder {
         }
     }
 
-    public SqlCallableStatementBuilder setReturnType(int returnType) {
-        this.returnType = returnType;
+    public SqlCallableStatementBuilder setReturnType(int returnTypeOpt) {
+        this.returnTypeOpt = Optional.of(returnTypeOpt);
         return this;
     }
 
@@ -85,9 +82,13 @@ public class SqlCallableStatementBuilder {
 
     public CallableStatement build() throws SQLException {
         if (!StringValidator.isBlank(functionName)) {
+            if (returnTypeOpt.isEmpty()) {
+                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
+            }
+
             final CallableStatement funcCallableStatement = connectionWrapper.buildCallableStatementNamed(
                     buildQueryBuilder(functionName),
-                    returnType
+                    returnTypeOpt.get()
             );
             addDbInputsToCallable(funcCallableStatement);
 
