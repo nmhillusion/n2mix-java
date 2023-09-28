@@ -2,7 +2,9 @@ package tech.nmhillusion.n2mix.helper.database.result;
 
 import tech.nmhillusion.n2mix.annotation.IgnoredField;
 import tech.nmhillusion.n2mix.helper.database.query.ExtractResultToPage;
+import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
+import tech.nmhillusion.n2mix.type.function.VoidFunction;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.StringUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
@@ -171,13 +173,26 @@ public class ResultSetObjectBuilder {
     }
 
     public <T> List<T> buildList(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+        return buildList(mainClass, null);
+    }
+
+    public <T> List<T> buildList(Class<T> mainClass, VoidFunction<Pair<T, ResultSet>> callbackFunc) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
         final List<T> resultList = new ArrayList<>();
 
         if (null != mainClass) {
             while (resultSet.next()) {
-                resultList.add(
-                        buildCurrent(mainClass)
-                );
+                if (null == callbackFunc) {
+                    resultList.add(
+                            buildCurrent(mainClass)
+                    );
+                } else {
+                    final T currentItem = buildCurrent(mainClass);
+                    resultList.add(
+                            currentItem
+                    );
+
+                    callbackFunc.apply(new Pair<>(currentItem, resultSet));
+                }
             }
         }
 
