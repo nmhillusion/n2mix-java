@@ -13,6 +13,7 @@ import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
+import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.DateUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
@@ -62,23 +64,30 @@ public class ConnectionDbTest {
         }
     }
 
+    private Pair<DataSource, SessionFactory> getSessionFactory() throws IOException {
+        final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
+
+        final String dbUrl = getDatabaseConfig("dataSource.url", String.class);
+        final String dbUsername = getDatabaseConfig("dataSource.username", String.class);
+        final String dbPassword = getDatabaseConfig("dataSource.password", String.class);
+
+        final DatabaseConfigHelper databaseConfigHelper = DatabaseConfigHelper.INSTANCE;
+        final DataSourceProperties dataSourceProperties = DataSourceProperties.generateFromDefaultDataSourceProperties("sample-datasource", oracleDataSourceConfig, dbUrl, dbUsername, dbPassword);
+
+        final DataSource dataSource_ = databaseConfigHelper.generateDataSource(dataSourceProperties);
+        final SessionFactory sessionFactory_ = databaseConfigHelper.generateSessionFactory(dataSourceProperties);
+
+        return new Pair<>(dataSource_, sessionFactory_);
+    }
+
     @Test
     void testConnectDb() {
         assumeFalse(isGitHubAction);
 
         Assertions.assertDoesNotThrow(() -> {
-            final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
-
-            final String dbUrl = getDatabaseConfig("dataSource.url", String.class);
-            final String dbUsername = getDatabaseConfig("dataSource.username", String.class);
-            final String dbPassword = getDatabaseConfig("dataSource.password", String.class);
-
-            final DatabaseConfigHelper databaseConfigHelper = DatabaseConfigHelper.INSTANCE;
-            final DataSourceProperties dataSourceProperties = DataSourceProperties.generateFromDefaultDataSourceProperties("sample-datasource", oracleDataSourceConfig, dbUrl, dbUsername, dbPassword);
-
-            final DataSource dataSource = databaseConfigHelper.generateDataSource(dataSourceProperties);
-            try (final SessionFactory sessionFactory = databaseConfigHelper.generateSessionFactory(dataSourceProperties)) {
-                final DatabaseHelper databaseHelper = new DatabaseHelper(dataSource, sessionFactory);
+            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            try (final SessionFactory sessionFactory = databaseData_.getValue()) {
+                final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
                 final DatabaseWorker dbWorker = databaseHelper.getWorker();
 
                 dbWorker.doWork(conn -> {
@@ -111,8 +120,60 @@ public class ConnectionDbTest {
                                                 )
                                         );
 
-                                LogHelper.getLogger(this).info("document item: " + entity_);
+                                getLogger(this).info("document item: " + entity_);
                             }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @Test
+    void testConnectionWithBuildList() {
+        assumeFalse(isGitHubAction);
+
+        Assertions.assertDoesNotThrow(() -> {
+            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            try (final SessionFactory sessionFactory = databaseData_.getValue()) {
+                final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
+                final DatabaseWorker dbWorker = databaseHelper.getWorker();
+
+                dbWorker.doWork(conn -> {
+                    try (final PreparedStatement preparedStatement_ = conn.buildPreparedStatement("""
+                               select * from t_document
+                               where id in (1, 2, 3)
+                               order by id asc
+                            """)) {
+                        try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
+                            final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder()
+                                    .setResultSet(resultSet)
+                                    .addCustomConverters("title", raw_ ->
+                                            CastUtil
+                                                    .safeCast(raw_, String.class)
+                                                    .toUpperCase()
+                                    )
+                                    .addCustomConverters("insert_data_time", raw_ ->
+                                            DateUtil.format(
+                                                    CastUtil.safeCast(raw_, Date.class)
+                                                    , "MMM dd yyyy")
+                                    )
+                                    .setIsIgnoreWarningMissingField(false)
+                                    .buildList(DocumentEntity.class);
+
+//                            .setFormattedInsertDataTime(
+//                                    DateUtil.format(resultSet.getTimestamp("insert_data_time"),
+//                                            "dd/MM/yyyy HH:mm:ss"
+//                                    )
+//                            )
+
+                            LogHelper.getLogger(this).info("list size: " + documentEntities.size());
+
+                            documentEntities.forEach(doc_ -> {
+                                getLogger(this).info("document item from list: " + doc_);
+                            });
+
+                            assumeFalse(documentEntities.isEmpty());
                         }
                     }
                 });
