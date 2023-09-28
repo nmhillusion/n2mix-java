@@ -174,7 +174,7 @@ public class ResultSetObjectBuilder {
         final List<T> resultList = new ArrayList<>();
 
         if (null != mainClass) {
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 resultList.add(
                         buildCurrent(mainClass)
                 );
