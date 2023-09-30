@@ -4,7 +4,7 @@ import tech.nmhillusion.n2mix.annotation.IgnoredField;
 import tech.nmhillusion.n2mix.helper.database.query.ExtractResultToPage;
 import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
-import tech.nmhillusion.n2mix.type.function.VoidFunction;
+import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.StringUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
@@ -172,11 +172,11 @@ public class ResultSetObjectBuilder {
         return fillDataForInstance(mainClass, instance_, resultSet);
     }
 
-    public <T> List<T> buildList(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+    public <T> List<T> buildList(Class<T> mainClass) throws Throwable {
         return buildList(mainClass, null);
     }
 
-    public <T> List<T> buildList(Class<T> mainClass, VoidFunction<Pair<T, ResultSet>> callbackFunc) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+    public <T> List<T> buildList(Class<T> mainClass, ThrowableVoidFunction<Pair<T, ResultSet>> callbackFunc) throws Throwable {
         final List<T> resultList = new ArrayList<>();
 
         if (null != mainClass) {
@@ -191,7 +191,7 @@ public class ResultSetObjectBuilder {
                             currentItem
                     );
 
-                    callbackFunc.apply(new Pair<>(currentItem, resultSet));
+                    callbackFunc.throwableVoidApply(new Pair<>(currentItem, resultSet));
                 }
             }
         }
