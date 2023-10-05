@@ -101,12 +101,12 @@ public class ConnectionDbTest {
                                 getLogger(this).info("document{ ID = %s, Title = %s }".formatted(resultSet.getString("id"), resultSet.getString("title")));
 
                                 final DocumentEntity entity_ = new ResultSetObjectBuilder(resultSet)
-                                        .addCustomConverters("title", raw_ ->
+                                        .addFieldCustomConverters("title", raw_ ->
                                                 CastUtil
                                                         .safeCast(raw_, String.class)
                                                         .toUpperCase()
                                         )
-                                        .addCustomConverters("insert_data_time", raw_ ->
+                                        .addFieldCustomConverters("insertDataTime", raw_ ->
                                                 DateUtil.format(
                                                         CastUtil.safeCast(raw_, Date.class)
                                                         , "MMM dd yyyy")
@@ -146,12 +146,12 @@ public class ConnectionDbTest {
                             """)) {
                         try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
                             final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder(resultSet)
-                                    .addCustomConverters("title", raw_ ->
+                                    .addFieldCustomConverters("title", raw_ ->
                                             CastUtil
                                                     .safeCast(raw_, String.class)
                                                     .toUpperCase()
                                     )
-                                    .addCustomConverters("insert_data_time", raw_ ->
+                                    .addFieldCustomConverters("insertDataTime", raw_ ->
                                             DateUtil.format(
                                                     CastUtil.safeCast(raw_, Date.class)
                                                     , "MMM dd yyyy")

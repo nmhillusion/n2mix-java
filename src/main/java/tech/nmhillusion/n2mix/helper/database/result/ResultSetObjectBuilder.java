@@ -26,7 +26,7 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 public class ResultSetObjectBuilder {
     private static final Map<String, List<Field>> FIELD_OF_CLASSES_CACHE = new TreeMap<>();
-    private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
+    private final Map<String, ThrowableFunction<Object, Object>> fieldCustomConverters = new TreeMap<>();
     private final List<String> allColumnNamesCache = new ArrayList<>();
     private final Map<String, Optional<String>> fieldColumnNameMapCache = new TreeMap<>();
     private final ResultSet resultSet;
@@ -43,16 +43,16 @@ public class ResultSetObjectBuilder {
         return resultSet;
     }
 
-    public Map<String, ThrowableFunction<Object, Object>> getCustomConverters() {
-        return customConverters;
+    public Map<String, ThrowableFunction<Object, Object>> getFieldCustomConverters() {
+        return fieldCustomConverters;
     }
 
-    public ResultSetObjectBuilder addCustomConverters(String columnName, ThrowableFunction<Object, Object> customConverter) {
-        if (StringValidator.isBlank(columnName) || null == customConverter) {
+    public ResultSetObjectBuilder addFieldCustomConverters(String fieldName, ThrowableFunction<Object, Object> customConverter) {
+        if (StringValidator.isBlank(fieldName) || null == customConverter) {
             return this;
         }
 
-        this.customConverters.put(columnName.toLowerCase(), customConverter);
+        this.fieldCustomConverters.put(fieldName.toLowerCase(), customConverter);
         return this;
     }
 
@@ -105,17 +105,22 @@ public class ResultSetObjectBuilder {
         return columnNameOpt;
     }
 
-    private Optional<ThrowableFunction<Object, Object>> getCustomConverterOfColumn(String columnName) {
-        if (StringValidator.isBlank(columnName)) {
+    private Optional<ThrowableFunction<Object, Object>> getCustomConverterOfField(Field field_) {
+        if (null == field_) {
             return Optional.empty();
         }
 
-        final Optional<String> converterColumnNameOpt = customConverters.keySet()
+        final String fieldName = field_.getName();
+        if (StringValidator.isBlank(fieldName)) {
+            return Optional.empty();
+        }
+
+        final Optional<String> converterColumnNameOpt = fieldCustomConverters.keySet()
                 .stream()
-                .filter(it -> columnName.equalsIgnoreCase(String.valueOf(it)))
+                .filter(it -> fieldName.equalsIgnoreCase(String.valueOf(it)))
                 .findFirst();
 
-        return converterColumnNameOpt.map(customConverters::get);
+        return converterColumnNameOpt.map(fieldCustomConverters::get);
 
     }
 
@@ -140,13 +145,17 @@ public class ResultSetObjectBuilder {
             try {
                 final Optional<String> columnNameFromFieldOpt = getColumnNameFromField(field_, allColumnNames);
                 if (columnNameFromFieldOpt.isEmpty()) {
-                    throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
+                    if (!isIgnoreWarningMissingField) {
+                        throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
+                    } else {
+                        continue;
+                    }
                 }
 
                 final String columnName = columnNameFromFieldOpt.get();
                 final Object rawObject = resultSet.getObject(columnName);
 
-                final Optional<ThrowableFunction<Object, Object>> customConverterOfColumn = getCustomConverterOfColumn(columnName);
+                final Optional<ThrowableFunction<Object, Object>> customConverterOfColumn = getCustomConverterOfField(field_);
                 final Object convertedObject = customConverterOfColumn.isEmpty()
                         ? CastUtil.safeCast(rawObject, field_.getType())
                         : customConverterOfColumn
