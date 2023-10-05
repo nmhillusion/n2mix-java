@@ -29,16 +29,18 @@ public class ResultSetObjectBuilder {
     private final Map<String, ThrowableFunction<Object, Object>> customConverters = new HashMap<>();
     private final List<String> allColumnNamesCache = new ArrayList<>();
     private final Map<String, Optional<String>> fieldColumnNameMapCache = new TreeMap<>();
-    private ResultSet resultSet;
+    private final ResultSet resultSet;
     private boolean isIgnoreWarningMissingField = true;
+
+    public ResultSetObjectBuilder(ResultSet resultSet) {
+        if (null == resultSet) {
+            throw new IllegalArgumentException("ResultSet must be not null to initialize");
+        }
+        this.resultSet = resultSet;
+    }
 
     public ResultSet getResultSet() {
         return resultSet;
-    }
-
-    public ResultSetObjectBuilder setResultSet(ResultSet resultSet) {
-        this.resultSet = resultSet;
-        return this;
     }
 
     public Map<String, ThrowableFunction<Object, Object>> getCustomConverters() {

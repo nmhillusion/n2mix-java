@@ -100,8 +100,7 @@ public class ConnectionDbTest {
                             while (resultSet.next()) {
                                 getLogger(this).info("document{ ID = %s, Title = %s }".formatted(resultSet.getString("id"), resultSet.getString("title")));
 
-                                final DocumentEntity entity_ = new ResultSetObjectBuilder()
-                                        .setResultSet(resultSet)
+                                final DocumentEntity entity_ = new ResultSetObjectBuilder(resultSet)
                                         .addCustomConverters("title", raw_ ->
                                                 CastUtil
                                                         .safeCast(raw_, String.class)
@@ -146,8 +145,7 @@ public class ConnectionDbTest {
                                order by id asc
                             """)) {
                         try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
-                            final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder()
-                                    .setResultSet(resultSet)
+                            final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder(resultSet)
                                     .addCustomConverters("title", raw_ ->
                                             CastUtil
                                                     .safeCast(raw_, String.class)
