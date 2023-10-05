@@ -17,10 +17,10 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 @Component
 public class SpringBootAppReadyInitialize implements ApplicationListener<ContextRefreshedEvent> {
-    @Value("${spring.output.ansi.enabled}")
+    @Value("${spring.output.ansi.enabled:NEVER}")
     private String outputAnsiEnabled;
 
-    @Value("${logging.pattern.dateformat}")
+    @Value("${logging.pattern.dateformat:yyyy-MM-dd'T'HH:mm:ss.SSS}")
     private String loggingPatternDateFormat;
 
     @Override
