@@ -1,21 +1,16 @@
 package tech.nmhillusion.n2mix.helper.render;
 
-import tech.nmhillusion.n2mix.constant.ImageCompressionType;
 import org.junit.jupiter.api.Test;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
+import tech.nmhillusion.n2mix.constant.ImageCompressionType;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
 
-import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class PdfToTiffImageHelperTest {
@@ -46,34 +41,15 @@ class PdfToTiffImageHelperTest {
                             StandardOpenOption.WRITE
                     )) {
                         outputStream.write(dataBytes);
+                        outputStream.flush();
                     }
                 }
 
-                deleteOnComplete(
+                ClearFolderHelper.deleteOnComplete(
                         Path.of(OUTPUT_DIR).toFile(),
                         WILL_DELETE_ON_COMPLETE
                 );
             }
         });
-    }
-
-    private void deleteOnComplete(File file2Delete, boolean enable) throws IOException {
-        if (!enable) {
-            return;
-        }
-        final File[] pathList = file2Delete.listFiles();
-        if (null != pathList) {
-            LogHelper.getLogger(this).info("list file to delete: %s".formatted(
-                    String.join(", ", Arrays.stream(pathList).map(File::getName).toList())
-            ));
-
-            for (File pathItem : pathList) {
-                deleteOnComplete(pathItem, enable);
-            }
-        }
-        LogHelper.getLogger(this).info(
-                "deleted file: %s -> %s"
-                        .formatted(file2Delete, file2Delete.delete())
-        );
     }
 }
