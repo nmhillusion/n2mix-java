@@ -1,12 +1,12 @@
-package tech.nmhillusion.n2mix.helper.render;
+package tech.nmhillusion.n2mix.helper.render.pdf;
 
-import tech.nmhillusion.n2mix.constant.ImageCompressionType;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+import tech.nmhillusion.n2mix.constant.ImageCompressionType;
+import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2023-05-13

@@ -1,4 +1,4 @@
-package tech.nmhillusion.n2mix.helper.render;
+package tech.nmhillusion.n2mix.helper.render.image;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

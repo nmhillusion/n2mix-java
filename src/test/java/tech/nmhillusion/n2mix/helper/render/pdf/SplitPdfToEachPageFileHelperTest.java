@@ -1,7 +1,8 @@
-package tech.nmhillusion.n2mix.helper.render;
+package tech.nmhillusion.n2mix.helper.render.pdf;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import tech.nmhillusion.n2mix.helper.render.ClearFolderHelper;
 
 import java.io.InputStream;
 import java.io.OutputStream;
