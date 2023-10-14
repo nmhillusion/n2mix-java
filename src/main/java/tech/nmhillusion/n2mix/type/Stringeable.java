@@ -1,12 +1,15 @@
 package tech.nmhillusion.n2mix.type;
 
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
+
+import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * date: 2022-09-25
@@ -16,6 +19,7 @@ import java.util.stream.Stream;
 
 public class Stringeable implements Serializable {
     private static final Map<String, List<Field>> CACHED__CLASS_FIELDS = new TreeMap<>();
+    private static final List<String> pendingObjects = new CopyOnWriteArrayList<>();
 
     private List<Field> getFieldsOfClass() {
         if (CACHED__CLASS_FIELDS.containsKey(getClass().getName())) {
@@ -34,51 +38,39 @@ public class Stringeable implements Serializable {
         return fieldList;
     }
 
-    private Object getValueOfField(Field field_) throws IllegalAccessException {
-        if (null == field_) {
-            return null;
-        }
-
-        if (Stream.of(byte.class,
-                        char.class,
-                        short.class,
-                        int.class,
-                        long.class,
-                        float.class,
-                        double.class,
-                        CharSequence.class
-                )
-                .anyMatch(cls -> cls.isAssignableFrom(field_.getType()))
-        ) {
-            return field_.get(this);
-        } else if (Iterable.class.isAssignableFrom(field_.getType())) {
-            final ParameterizedType genericType = (ParameterizedType) field_.getGenericType();
-            return "List of %s".formatted(Arrays.toString(genericType.getActualTypeArguments()));
-        } else if (Map.class.isAssignableFrom(field_.getType())) {
-            final ParameterizedType genericType = (ParameterizedType) field_.getGenericType();
-            return "Map of %s".formatted(Arrays.toString(genericType.getActualTypeArguments()));
-        } else {
-            return "%s@%s".formatted(getClass().getName(), field_.get(this).hashCode());
-        }
+    private String generateIdKeyForObject() {
+        return getClass().getName() + "$" + System.identityHashCode(this);
     }
 
     @Override
     public String toString() {
+        final String currentHashCode = generateIdKeyForObject();
+
+        if (pendingObjects.contains(currentHashCode)) {
+            return getClass().getName();
+        }
+        pendingObjects.add(currentHashCode);
+
         final Map<String, Object> fieldMap = new HashMap<>();
 
         final List<Field> fieldsOfClass = getFieldsOfClass();
         for (Field field_ : fieldsOfClass) {
             try {
                 field_.setAccessible(true);
-                fieldMap.put(field_.getName(), getValueOfField(field_));
+                final Object fieldValue_ = field_.get(this);
+                fieldMap.put(field_.getName(), fieldValue_);
+
             } catch (Throwable e) {
-                LogHelper.getLogger(this).error(e);
+                getLogger(this).error(e);
                 fieldMap.put(field_.getName(), "!!!Error: IllegalAccessException");
             }
         }
 
-        return "class $className $fields"
+        final String finalContent = "class $className $fields"
                 .replace("$className", getClass().getName())
                 .replace("$fields", fieldMap.toString());
+
+        pendingObjects.remove(currentHashCode);
+        return finalContent;
     }
 }
