@@ -16,7 +16,7 @@ import java.util.List;
  * <p>
  * created date: 2023-10-06
  */
-public class MergePdfIntoOnePageHelper {
+public class MergeMultiplePdfsIntoOnePdfHelper {
 
     private List<PDPage> createPdfPageFromByteArray(PDDocument pdDocumentData) throws IOException {
         if (null == pdDocumentData) {

@@ -17,7 +17,7 @@ import java.util.List;
  * <p>
  * created date: 2023-10-06
  */
-class MergePdfIntoOnePageHelperTest {
+class MergeMultiplePdfsIntoOnePdfHelperTest {
     private static final String OUTPUT_DIR = "outputs";
     private static final boolean WILL_DELETE_ON_COMPLETE = true;
 
@@ -32,7 +32,7 @@ class MergePdfIntoOnePageHelperTest {
                         getClass().getClassLoader().getResourceAsStream(f_)
                 ));
 
-                final MergePdfIntoOnePageHelper mergePdfIntoOnePageHelper = new MergePdfIntoOnePageHelper();
+                final MergeMultiplePdfsIntoOnePdfHelper mergePdfIntoOnePageHelper = new MergeMultiplePdfsIntoOnePdfHelper();
                 final byte[] mergePdfPagesData = mergePdfIntoOnePageHelper.mergePdfPages(inputFileStreamList);
 
                 final Path outputFilePath = Path.of(OUTPUT_DIR, outputFileName);
