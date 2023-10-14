@@ -24,6 +24,10 @@ public class TiffImageToPdfHelper {
             return new byte[0];
         }
         final BufferedImage bufferedImage = ImageIO.read(tiffData);
+        if (null == bufferedImage) {
+            throw new IOException("tiff data is not valid, cannot obtain buffered image from stream");
+        }
+
         final int imageWidth = bufferedImage.getWidth();
         final int imageHeight = bufferedImage.getHeight();
 
