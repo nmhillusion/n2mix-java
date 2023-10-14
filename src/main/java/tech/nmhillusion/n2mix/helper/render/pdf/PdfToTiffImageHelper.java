@@ -2,6 +2,7 @@ package tech.nmhillusion.n2mix.helper.render.pdf;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
@@ -90,14 +91,15 @@ public class PdfToTiffImageHelper {
     ) throws IOException {
         final List<byte[]> tiffDataList = new ArrayList<>();
 
-        int pageCounter = 0;
-        for (PDPage page_ : pdDocument.getPages()) {
+        final PDPageTree documentPages = pdDocument.getPages();
+        final int pagesCount = documentPages.getCount();
+        for (int pageIndex = 0; pageIndex < pagesCount; ++pageIndex) {
             LogHelper.getLogger(this).info(
-                    "rendering on page %s of %s".formatted(pageCounter, fileId)
+                    "rendering on page %s of %s".formatted(pageIndex, fileId)
             );
 
             final BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(
-                    pageCounter++,
+                    pageIndex,
                     dpiOfImage,
                     ImageType.RGB);
 
