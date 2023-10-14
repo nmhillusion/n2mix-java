@@ -3,6 +3,7 @@ package tech.nmhillusion.n2mix.util;
 import org.springframework.lang.NonNull;
 import tech.nmhillusion.n2mix.exception.AppRuntimeException;
 import tech.nmhillusion.n2mix.exception.GeneralException;
+import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,14 +34,16 @@ public abstract class ExceptionUtil {
         if (finalException instanceof SQLException) {
             return throwParsedSqlException(finalException);
         } else if (finalException instanceof GeneralException) {
-            return (AppRuntimeException) finalException;
+            return new AppRuntimeException(finalException);
         } else {
             return new AppRuntimeException(ex);
         }
     }
 
     private static String truncateSqlUserError(@NonNull String message) {
-        if (USER_ERROR_PATTERN.matcher(message.trim()).matches()) {
+        if (StringValidator.isBlank(message)) {
+            message = StringUtil.EMPTY;
+        } else if (USER_ERROR_PATTERN.matcher(message.trim()).matches()) {
             if (message.contains("\n")) {
                 message = message.substring(0, message.indexOf("\n"));
             }
