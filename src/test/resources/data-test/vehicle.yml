@@ -1,12 +1,22 @@
+brands:
+  - &honda
+    name: Honda
+    country: Japan
+  - &BMW
+    name: BMW
+    country: USA
+
 car:
   wheel: 4
   color: blue
   speed: fast
+  brand: *BMW
 
 bicycle:
   wheel: 2
   color: white
   speed: slow
+  brand: *honda
 
 session: 9
 
