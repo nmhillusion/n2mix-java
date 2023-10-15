@@ -62,7 +62,7 @@ public class YamlReader {
      * @param defaultValue value will be return if not found
      * @return if missing key or cannot cast will return <b>defaultValue</b>
      */
-    public <T> T getProperty(String keyChain, Class<T> classToCast, T defaultValue) {
+    public <T> T getProperty(String keyChain, Class<T> classToCast, T defaultValue) throws IOException {
         Object propertyValue = null;
 
         if (factory.containsKey(keyChain)) {
@@ -86,7 +86,7 @@ public class YamlReader {
                     if (dataSourceMap.containsKey(key)) {
                         propertyValue = dataSourceMap.get(key);
                     } else {
-                        break;
+                        throw new IOException("Not found key: " + keyChain);
                     }
                 } else {
                     break;
@@ -105,7 +105,7 @@ public class YamlReader {
      * @param <T>         type will be returned
      * @return if missing key or cannot cast will return `null`
      */
-    public <T> T getProperty(String key, Class<T> classToCast) {
+    public <T> T getProperty(String key, Class<T> classToCast) throws IOException {
         return getProperty(key, classToCast, null);
     }
 
@@ -114,7 +114,7 @@ public class YamlReader {
      *            default <b>@param classToCast = String.class</b>
      * @return if missing key or cannot cast will return `null`
      */
-    public String getProperty(String key) {
+    public String getProperty(String key) throws IOException {
         return getProperty(key, String.class);
     }
 }

@@ -3,6 +3,7 @@ package tech.nmhillusion.n2mix.helper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -230,4 +231,23 @@ class YamlReaderTest {
             }
         });
     }
+
+    @Test
+    void testNotFoundKeyProperty() {
+        Assertions.assertDoesNotThrow(() -> {
+            try (final InputStream vehicleStream = getClass().getClassLoader().getResourceAsStream("data-test/vehicle.yml")) {
+                final YamlReader yamlReader = new YamlReader(vehicleStream);
+
+                {
+                    final int wheelCount = yamlReader.getProperty("car.wheel", int.class);
+                    assertEquals(4, wheelCount);
+                }
+
+                Assertions.assertThrows(IOException.class, () -> {
+                    final String color2_ = yamlReader.getProperty("car.color2", String.class);
+                });
+            }
+        });
+    }
+
 }
