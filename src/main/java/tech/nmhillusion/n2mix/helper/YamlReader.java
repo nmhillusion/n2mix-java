@@ -1,13 +1,18 @@
 package tech.nmhillusion.n2mix.helper;
 
+import org.yaml.snakeyaml.Yaml;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * date: 2022-10-05
@@ -42,7 +47,12 @@ public class YamlReader {
             return new ArrayList<>();
         }
 
-        return Arrays.asList(inputKey.split("\\."));
+        return new ArrayList<>(
+                Stream.of(inputKey.split("\\."))
+                        .map(String::trim)
+                        .filter(Predicate.not(StringValidator::isBlank))
+                        .toList()
+        );
     }
 
     /**
@@ -72,8 +82,7 @@ public class YamlReader {
 
             propertyValue = propertySources.get(keyFirst);
             for (String key : remainKeys) {
-                if (propertyValue instanceof Map) {
-                    final Map<?, ?> dataSourceMap = (Map<?, ?>) propertyValue;
+                if (propertyValue instanceof Map<?, ?> dataSourceMap) {
                     if (dataSourceMap.containsKey(key)) {
                         propertyValue = dataSourceMap.get(key);
                     } else {
