@@ -175,6 +175,10 @@ public class ResultSetObjectBuilder {
 
 
     public <T> T buildCurrent(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+        if (0 == resultSet.getRow()) {
+            throw new SQLException("Current ResultSet is not valid to obtain data. Maybe not call to ResultSet.next() yet.");
+        }
+
         if (null == mainClass) {
             return null;
         }

@@ -11,7 +11,6 @@ import tech.nmhillusion.n2mix.helper.database.config.DatabaseConfigHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
 import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.util.CastUtil;
@@ -23,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -129,6 +129,39 @@ public class ConnectionDbTest {
     }
 
     @Test
+    void testConnectDbBuildCurrentWithoutResultSetNext() {
+        assumeFalse(isGitHubAction);
+
+        Assertions.assertThrows(SQLException.class, () -> {
+            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            try (final SessionFactory sessionFactory = databaseData_.getValue()) {
+                final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
+                final DatabaseWorker dbWorker = databaseHelper.getWorker();
+
+                dbWorker.doWork(conn -> {
+                    try (final PreparedStatement preparedStatement_ = conn.buildPreparedStatement("""
+                               select * from t_document
+                               where id in (1, 2, 3)
+                               order by id asc
+                            """)) {
+                        try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
+//                            while (resultSet.next()) {
+                            final int currentRow_ = resultSet.getRow();
+                            getLogger(this).info("current row is %s".formatted(currentRow_));
+
+                            final DocumentEntity entity_ = new ResultSetObjectBuilder(resultSet)
+                                    .buildCurrent(DocumentEntity.class);
+
+                            getLogger(this).info("document item: " + entity_);
+//                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @Test
     void testConnectionWithBuildList() {
         assumeFalse(isGitHubAction);
 
@@ -165,7 +198,7 @@ public class ConnectionDbTest {
 //                                    )
 //                            )
 
-                            LogHelper.getLogger(this).info("list size: " + documentEntities.size());
+                            getLogger(this).info("list size: " + documentEntities.size());
 
                             documentEntities.forEach(doc_ -> {
                                 getLogger(this).info("document item from list: " + doc_);
