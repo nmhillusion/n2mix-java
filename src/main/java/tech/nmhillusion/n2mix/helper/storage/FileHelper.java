@@ -12,9 +12,9 @@ public abstract class FileHelper {
         if (null == folderToDelete) {
             return true;
         }
-        File[] allContents = folderToDelete.listFiles();
-        if (allContents != null) {
-            for (File subFile : allContents) {
+        final File[] allContents = folderToDelete.listFiles();
+        if (null != allContents) {
+            for (final File subFile : allContents) {
                 recursiveDeleteFolder(subFile);
             }
         }
