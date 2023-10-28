@@ -1,6 +1,7 @@
 package tech.nmhillusion.n2mix.helper.render.pdf;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -17,6 +18,8 @@ import java.io.InputStream;
  * created date: 2023-10-22
  */
 public class ResizePdfHelper {
+
+    private static final int MAXIMUM_BUFFER_PDF_IN_BYTES = 1024 * 1024 * 2;
     private final float width;
     private final float height;
 
@@ -36,14 +39,16 @@ public class ResizePdfHelper {
     public byte[] render(InputStream originalData) throws IOException {
         byte[] renderedData_;
 
-        try (final PDDocument pdDocument = PDDocument.load(originalData)) {
-            final PDPageTree documentPages = pdDocument.getPages();
-            for (PDPage page_ : documentPages) {
+        try (final PDDocument pdDocumentSrc = PDDocument.load(originalData);
+             final PDDocument pdDocumentOut = new PDDocument(MemoryUsageSetting.setupMixed(MAXIMUM_BUFFER_PDF_IN_BYTES))) {
+            final PDPageTree documentPages = pdDocumentSrc.getPages();
+            for (final PDPage page_ : documentPages) {
                 final PDRectangle currentMediaBox = page_.getMediaBox();
                 final float scaleFactor_ = calculateScaleFactor(currentMediaBox);
 
+                /// Mark: for scaling
                 try (final PDPageContentStream pdPageContentStream = new PDPageContentStream(
-                        pdDocument
+                        pdDocumentSrc
                         , page_
                         , PDPageContentStream.AppendMode.PREPEND
                         , true
@@ -60,10 +65,16 @@ public class ResizePdfHelper {
                 );
 
                 page_.setMediaBox(newMediaBox_);
+
+                /// Mark: for out content
+                final PDPage outPage = pdDocumentOut.importPage(page_);
+                outPage.setResources(page_.getResources());
+                outPage.setMetadata(page_.getMetadata());
             }
 
             try (final ByteArrayOutputStream renderedDataOutputStream_ = new ByteArrayOutputStream()) {
-                pdDocument.save(renderedDataOutputStream_);
+                pdDocumentOut.save(renderedDataOutputStream_);
+                renderedDataOutputStream_.flush();
                 renderedData_ = renderedDataOutputStream_.toByteArray();
             }
         }
