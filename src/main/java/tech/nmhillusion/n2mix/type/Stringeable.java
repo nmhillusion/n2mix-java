@@ -47,7 +47,7 @@ public class Stringeable implements Serializable {
         final String currentHashCode = generateIdKeyForObject();
 
         if (pendingObjects.contains(currentHashCode)) {
-            return getClass().getName();
+            return getClass().getSimpleName();
         }
         pendingObjects.add(currentHashCode);
 
@@ -66,8 +66,8 @@ public class Stringeable implements Serializable {
             }
         }
 
-        final String finalContent = "class $className $fields"
-                .replace("$className", getClass().getName())
+        final String finalContent = "$className$fields"
+                .replace("$className", getClass().getSimpleName())
                 .replace("$fields", fieldMap.toString());
 
         pendingObjects.remove(currentHashCode);
