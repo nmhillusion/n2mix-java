@@ -1,7 +1,7 @@
-package tech.nmhillusion.n2mix.helper.office.excel;
+package tech.nmhillusion.n2mix.helper.office.excel.writer;
 
 import tech.nmhillusion.n2mix.exception.MissingDataException;
-import tech.nmhillusion.n2mix.helper.office.excel.model.ExcelDataModel;
+import tech.nmhillusion.n2mix.helper.office.excel.writer.model.ExcelDataModel;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

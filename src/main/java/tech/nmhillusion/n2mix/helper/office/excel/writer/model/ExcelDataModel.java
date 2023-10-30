@@ -1,4 +1,4 @@
-package tech.nmhillusion.n2mix.helper.office.excel.model;
+package tech.nmhillusion.n2mix.helper.office.excel.writer.model;
 
 import tech.nmhillusion.n2mix.exception.MissingDataException;
 
