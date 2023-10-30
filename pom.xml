@@ -12,7 +12,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <spring.version>6.0.12</spring.version>
+        <spring.version>6.0.13</spring.version>
         <slf4j.version>2.0.5</slf4j.version>
         <pdfbox.version>2.0.28</pdfbox.version>
 
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.4</version>
         </dependency>
 
 
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.0</version>
+            <version>2.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
