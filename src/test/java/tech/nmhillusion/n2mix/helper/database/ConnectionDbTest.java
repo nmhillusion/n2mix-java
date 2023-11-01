@@ -12,6 +12,7 @@ import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
+import tech.nmhillusion.n2mix.model.DocumentWithOneMoreFieldEntity;
 import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.DateUtil;
@@ -111,7 +112,7 @@ public class ConnectionDbTest {
                                                         CastUtil.safeCast(raw_, Date.class)
                                                         , "MMM dd yyyy")
                                         )
-                                        .setIsIgnoreWarningMissingField(false)
+                                        .setIsIgnoreMissingField(false)
                                         .buildCurrent(DocumentEntity.class)
                                         .setFormattedInsertDataTime(
                                                 DateUtil.format(resultSet.getTimestamp("insert_data_time"),
@@ -189,7 +190,7 @@ public class ConnectionDbTest {
                                                     CastUtil.safeCast(raw_, Date.class)
                                                     , "MMM dd yyyy")
                                     )
-                                    .setIsIgnoreWarningMissingField(false)
+                                    .setIsIgnoreMissingField(false)
                                     .buildList(DocumentEntity.class);
 
 //                            .setFormattedInsertDataTime(
@@ -205,6 +206,33 @@ public class ConnectionDbTest {
                             });
 
                             assumeFalse(documentEntities.isEmpty());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @Test
+    void testConnectionWithMissingColumnName() {
+        assumeFalse(isGitHubAction);
+
+        Assertions.assertThrowsExactly(java.lang.NoSuchFieldException.class, () -> {
+            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            try (final SessionFactory sessionFactory = databaseData_.getValue()) {
+                final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
+                final DatabaseWorker dbWorker = databaseHelper.getWorker();
+
+                dbWorker.doWork(conn -> {
+                    try (final PreparedStatement preparedStatement_ = conn.buildPreparedStatement("""
+                               select * from t_document
+                               where id in (1, 2, 3)
+                               order by id asc
+                            """)) {
+                        try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
+                            final List<DocumentWithOneMoreFieldEntity> documentEntities = new ResultSetObjectBuilder(resultSet)
+                                    .setIsIgnoreMissingField(false)
+                                    .buildList(DocumentWithOneMoreFieldEntity.class);
                         }
                     }
                 });

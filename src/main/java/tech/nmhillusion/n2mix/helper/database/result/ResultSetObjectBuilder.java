@@ -30,7 +30,7 @@ public class ResultSetObjectBuilder {
     private final List<String> allColumnNamesCache = new ArrayList<>();
     private final Map<String, Optional<String>> fieldColumnNameMapCache = new TreeMap<>();
     private final ResultSet resultSet;
-    private boolean isIgnoreWarningMissingField = true;
+    private boolean isIgnoreMissingField = true;
 
     public ResultSetObjectBuilder(ResultSet resultSet) {
         if (null == resultSet) {
@@ -56,8 +56,8 @@ public class ResultSetObjectBuilder {
         return this;
     }
 
-    public ResultSetObjectBuilder setIsIgnoreWarningMissingField(boolean ignoreWarningMissingField) {
-        isIgnoreWarningMissingField = ignoreWarningMissingField;
+    public ResultSetObjectBuilder setIsIgnoreMissingField(boolean ignoreMissingField) {
+        isIgnoreMissingField = ignoreMissingField;
         return this;
     }
 
@@ -137,21 +137,21 @@ public class ResultSetObjectBuilder {
         return this.allColumnNamesCache;
     }
 
-    private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException {
+    private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException, NoSuchFieldException {
         final List<String> allColumnNames = getAllColumnNames(resultSet);
         final List<Field> fieldsOfClass = getFieldsOfClass(mainClass);
 
         for (Field field_ : fieldsOfClass) {
-            try {
-                final Optional<String> columnNameFromFieldOpt = getColumnNameFromField(field_, allColumnNames);
-                if (columnNameFromFieldOpt.isEmpty()) {
-                    if (!isIgnoreWarningMissingField) {
-                        throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
-                    } else {
-                        continue;
-                    }
+            final Optional<String> columnNameFromFieldOpt = getColumnNameFromField(field_, allColumnNames);
+            if (columnNameFromFieldOpt.isEmpty()) {
+                if (!isIgnoreMissingField) {
+                    throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
+                } else {
+                    continue;
                 }
+            }
 
+            try {
                 final String columnName = columnNameFromFieldOpt.get();
                 final Object rawObject = resultSet.getObject(columnName);
 
@@ -165,16 +165,14 @@ public class ResultSetObjectBuilder {
                 field_.setAccessible(true);
                 field_.set(instance_, convertedObject);
             } catch (Throwable ex) {
-                if (!isIgnoreWarningMissingField) {
-                    getLogger(this).warn("No column with field name [%s]. Error: %s".formatted(field_.getName(), ex));
-                }
+                throw new SQLException(ex);
             }
         }
         return instance_;
     }
 
 
-    public <T> T buildCurrent(Class<T> mainClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, SQLException {
+    public <T> T buildCurrent(Class<T> mainClass) throws SQLException, NoSuchFieldException {
         if (0 == resultSet.getRow()) {
             throw new SQLException("Current ResultSet is not valid to obtain data. Maybe not call to ResultSet.next() yet.");
         }
@@ -183,8 +181,13 @@ public class ResultSetObjectBuilder {
             return null;
         }
 
-        final T instance_ = newInstanceWithNoArgs(mainClass);
-        return fillDataForInstance(mainClass, instance_, resultSet);
+        try {
+            final T instance_ = newInstanceWithNoArgs(mainClass);
+            return fillDataForInstance(mainClass, instance_, resultSet);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException ex) {
+            throw new SQLException(ex);
+        }
     }
 
     public <T> List<T> buildList(Class<T> mainClass) throws Throwable {
