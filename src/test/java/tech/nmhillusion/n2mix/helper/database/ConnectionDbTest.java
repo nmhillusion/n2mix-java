@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.constant.CommonConfigDataSourceValue;
-import tech.nmhillusion.n2mix.helper.YamlReader;
 import tech.nmhillusion.n2mix.helper.database.config.DataSourceProperties;
 import tech.nmhillusion.n2mix.helper.database.config.DatabaseConfigHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
@@ -20,7 +19,6 @@ import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getDatabaseConfig;
+import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getGitHubRunId;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
@@ -48,20 +48,6 @@ public class ConnectionDbTest {
             getLogger(ConnectionDbTest.class).warn("Ignore this test, because there is no Oracle database in github action!");
         } else {
             getLogger(ConnectionDbTest.class).info("Localhost Environment ==> Running testing database");
-        }
-    }
-
-    private static String getGitHubRunId() {
-        //            System.getenv().forEach((key, value) -> {
-//                getLogger(this).info("[env var] %s => %s".formatted(key, value));
-//            });
-
-        return System.getenv("GITHUB_RUN_ID");
-    }
-
-    private <T> T getDatabaseConfig(String configKey, Class<T> class2Cast) throws IOException {
-        try (final InputStream dbStream = getClass().getClassLoader().getResourceAsStream("app-config/database.yml")) {
-            return new YamlReader(dbStream).getProperty(configKey, class2Cast);
         }
     }
 
