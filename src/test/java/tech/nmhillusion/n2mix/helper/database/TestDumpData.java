@@ -132,5 +132,7 @@ public class TestDumpData {
                 while (!finished) ;
             }
         });
+
+        System.gc();
     }
 }
