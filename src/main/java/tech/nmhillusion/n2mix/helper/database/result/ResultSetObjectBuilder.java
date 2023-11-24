@@ -194,7 +194,7 @@ public class ResultSetObjectBuilder {
         return buildList(mainClass, null);
     }
 
-    public <T> List<T> buildList(Class<T> mainClass, ThrowableVoidFunction<Pair<T, ResultSet>> callbackFunc) throws Throwable {
+    public <T> List<T> buildList(Class<T> mainClass, ResultSetObjectBuilderCallback<T> callbackFunc) throws Throwable {
         final List<T> resultList = new ArrayList<>();
 
         if (null != mainClass) {
@@ -209,7 +209,7 @@ public class ResultSetObjectBuilder {
                             currentItem
                     );
 
-                    callbackFunc.throwableVoidApply(new Pair<>(currentItem, resultSet));
+                    callbackFunc.throwableApply(currentItem, resultSet);
                 }
             }
         }
