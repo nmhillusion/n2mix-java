@@ -10,6 +10,8 @@ import tech.nmhillusion.n2mix.helper.database.config.DatabaseConfigHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
+import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilderCallback;
+import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
 import tech.nmhillusion.n2mix.model.DocumentWithOneMoreFieldEntity;
 import tech.nmhillusion.n2mix.type.Pair;
@@ -136,8 +138,12 @@ public class ConnectionDbTest {
                             final int currentRow_ = resultSet.getRow();
                             getLogger(this).info("current row is %s".formatted(currentRow_));
 
-                            final DocumentEntity entity_ = new ResultSetObjectBuilder(resultSet)
-                                    .buildCurrent(DocumentEntity.class);
+                            final List<DocumentEntity> entity_ = new ResultSetObjectBuilder(resultSet)
+                                    .buildList(DocumentEntity.class, ( documentEntity, resultSet_) -> {
+                                            LogHelper.getLogger(this).info("loop through document item");
+                                        }
+                                    )
+                                    ;//.buildCurrent(DocumentEntity.class);
 
                             getLogger(this).info("document item: " + entity_);
 //                            }
