@@ -2,9 +2,7 @@ package tech.nmhillusion.n2mix.helper.database.result;
 
 import tech.nmhillusion.n2mix.annotation.IgnoredField;
 import tech.nmhillusion.n2mix.helper.database.query.ExtractResultToPage;
-import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
-import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 import tech.nmhillusion.n2mix.util.CastUtil;
 import tech.nmhillusion.n2mix.util.StringUtil;
 import tech.nmhillusion.n2mix.validator.StringValidator;
@@ -137,7 +135,7 @@ public class ResultSetObjectBuilder {
         return this.allColumnNamesCache;
     }
 
-    private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException, NoSuchFieldException {
+    private <T> T fillDataForInstance(Class<T> mainClass, T instance_, ResultSet resultSet) throws SQLException {
         final List<String> allColumnNames = getAllColumnNames(resultSet);
         final List<Field> fieldsOfClass = getFieldsOfClass(mainClass);
 
@@ -145,7 +143,7 @@ public class ResultSetObjectBuilder {
             final Optional<String> columnNameFromFieldOpt = getColumnNameFromField(field_, allColumnNames);
             if (columnNameFromFieldOpt.isEmpty()) {
                 if (!isIgnoreMissingField) {
-                    throw new NoSuchFieldException("Not found column name for field: " + field_.getName());
+                    throw new SQLException("Not found column name for field: " + field_.getName());
                 } else {
                     continue;
                 }
@@ -172,7 +170,7 @@ public class ResultSetObjectBuilder {
     }
 
 
-    public <T> T buildCurrent(Class<T> mainClass) throws SQLException, NoSuchFieldException {
+    public <T> T buildCurrent(Class<T> mainClass) throws SQLException {
         if (0 == resultSet.getRow()) {
             throw new SQLException("Current ResultSet is not valid to obtain data. Maybe not call to ResultSet.next() yet.");
         }
@@ -190,11 +188,11 @@ public class ResultSetObjectBuilder {
         }
     }
 
-    public <T> List<T> buildList(Class<T> mainClass) throws Throwable {
+    public <T> List<T> buildList(Class<T> mainClass) throws SQLException {
         return buildList(mainClass, null);
     }
 
-    public <T> List<T> buildList(Class<T> mainClass, ResultSetObjectBuilderCallback<T> callbackFunc) throws Throwable {
+    public <T> List<T> buildList(Class<T> mainClass, ResultSetObjectBuilderCallback<T> callbackFunc) throws SQLException {
         final List<T> resultList = new ArrayList<>();
 
         if (null != mainClass) {

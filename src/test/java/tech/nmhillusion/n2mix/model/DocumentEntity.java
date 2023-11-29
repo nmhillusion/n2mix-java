@@ -9,21 +9,21 @@ import tech.nmhillusion.n2mix.type.Stringeable;
  * created date: 2023-09-23
  */
 public class DocumentEntity extends Stringeable {
-    //    private String id;
+    private String id;
     private String title;
     private String insertBy;
     private String insertDataTime;
     @IgnoredField
     private String formattedInsertDataTime;
 
-//    public String getId() {
-//        return id;
-//    }
-//
-//    public DocumentEntity setId(String id) {
-//        this.id = id;
-//        return this;
-//    }
+    public String getId() {
+        return id;
+    }
+
+    public DocumentEntity setId(String id) {
+        this.id = id;
+        return this;
+    }
 
     public String getTitle() {
         return title;
