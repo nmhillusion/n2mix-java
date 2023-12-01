@@ -113,6 +113,10 @@ public class MixLogger {
             return paramObjects.toArray();
         }
     }
+
+    public boolean isInfoEnabled() {
+        return logger.isInfoEnabled();
+    }
     
     public void info(Object data) {
         if (data instanceof String) {
@@ -132,6 +136,10 @@ public class MixLogger {
         } else {
             logger.info(format_, params);
         }
+    }
+
+    public boolean isDebugEnabled() {
+        return logger.isDebugEnabled();
     }
     
     public void debug(Object data) {
@@ -153,6 +161,10 @@ public class MixLogger {
             logger.debug(format_, params);
         }
     }
+
+    public boolean isWarnEnabled() {
+        return logger.isWarnEnabled();
+    }
     
     public void warn(Object data) {
         if (data instanceof String) {
@@ -173,6 +185,10 @@ public class MixLogger {
             logger.warn(format_, params);
         }
     }
+
+    public boolean isTraceEnabled() {
+        return logger.isTraceEnabled();
+    }
     
     public void trace(Object data) {
         if (data instanceof String) {
@@ -192,6 +208,10 @@ public class MixLogger {
         } else {
             logger.trace(format_, params);
         }
+    }
+
+    public boolean isErrorEnabled() {
+        return logger.isErrorEnabled();
     }
     
     public void error(Object data) {
