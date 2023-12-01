@@ -6,6 +6,7 @@ import tech.nmhillusion.n2mix.helper.database.query.callback.CallableStatementCa
 import tech.nmhillusion.n2mix.helper.database.query.callback.NoReturnCallableStatementCallback;
 import tech.nmhillusion.n2mix.helper.database.query.callback.NoReturnPreparedStatementCallback;
 import tech.nmhillusion.n2mix.helper.database.query.callback.PreparedStatementCallback;
+import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import javax.sql.DataSource;
 import java.sql.CallableStatement;
@@ -104,7 +105,9 @@ public class StatementExecutor {
         if (null != session) {
             return session.doReturningWork(_conn -> {
                 final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-                getLogger(this).trace(queryString + " | returnType: " + returnType);
+                if (LogHelper.getLogger(this).isTraceEnabled()) {
+                    getLogger(this).trace(queryString + " | returnType: " + returnType);
+                }
                 final CallableStatement _callableStatement = _conn.prepareCall(queryString);
                 _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
@@ -112,7 +115,9 @@ public class StatementExecutor {
             });
         } else if (null != connection) {
             final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-            getLogger(this).trace(queryString + " | returnType: " + returnType);
+            if (LogHelper.getLogger(this).isTraceEnabled()) {
+                getLogger(this).trace(queryString + " | returnType: " + returnType);
+            }
             final CallableStatement _callableStatement = connection.prepareCall(queryString);
             _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
@@ -126,7 +131,9 @@ public class StatementExecutor {
         if (null != session) {
             session.doWork(_conn -> {
                 final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-                getLogger(this).trace(queryString + " | returnType: " + returnType);
+                if (LogHelper.getLogger(this).isTraceEnabled()) {
+                    getLogger(this).trace(queryString + " | returnType: " + returnType);
+                }
                 final CallableStatement _callableStatement = _conn.prepareCall(queryString);
                 _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
@@ -134,7 +141,9 @@ public class StatementExecutor {
             });
         } else if (null != connection) {
             final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-            getLogger(this).trace(queryString + " | returnType: " + returnType);
+            if (LogHelper.getLogger(this).isTraceEnabled()) {
+                getLogger(this).trace(queryString + " | returnType: " + returnType);
+            }
             final CallableStatement _callableStatement = connection.prepareCall(queryString);
             _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
