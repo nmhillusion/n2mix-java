@@ -12,8 +12,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class LogHelper {
-    private static final Map<String, MixLogger> logFactory = new TreeMap<>();
-    private static final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
+    private static final LogHelper instance = new LogHelper();
+    private final Map<String, MixLogger> logFactory = new TreeMap<>();
+    private final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
             .setColoring(true)
             .setDisplayLineNumber(true)
             .setLogLevel(LogLevel.DEBUG)
@@ -24,7 +25,7 @@ public class LogHelper {
     private static boolean usePiLogger = true;
     
     public static LogConfigModel getDefaultPiLoggerConfig() {
-        return piLogConfigModel;
+        return instance.piLogConfigModel;
     }
     
     public static void setDefaultPiLoggerConfig(LogConfigModel logConfig) {
@@ -41,6 +42,7 @@ public class LogHelper {
     
     public static void setUsePiLogger(boolean usePiLogger) {
         LogHelper.usePiLogger = usePiLogger;
+        instance.logFactory.clear();
     }
     
     private static PiLogger defaultLogger(Object object_) {
@@ -61,7 +63,7 @@ public class LogHelper {
         }
         
         final MixLogger mixLogger = new MixLogger(logger_, loggerClass);
-        logFactory.put(object_.getClass().getName(), mixLogger);
+        instance.logFactory.put(object_.getClass().getName(), mixLogger);
         return mixLogger;
     }
     
@@ -71,8 +73,8 @@ public class LogHelper {
     
     public static MixLogger getLogger(Object object_, boolean usePiLogger) {
         String logName = object_ instanceof Class ? ((Class<?>) object_).getName() : object_.getClass().getName();
-        if (logFactory.containsKey(logName)) {
-            return logFactory.get(logName);
+        if (instance.logFactory.containsKey(logName)) {
+            return instance.logFactory.get(logName);
         } else {
             return generateLogger(object_, usePiLogger);
         }
