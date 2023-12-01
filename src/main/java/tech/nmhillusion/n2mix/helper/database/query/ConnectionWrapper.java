@@ -2,12 +2,11 @@ package tech.nmhillusion.n2mix.helper.database.query;
 
 import org.hibernate.Session;
 import org.springframework.jdbc.core.JdbcTemplate;
+import tech.nmhillusion.n2mix.helper.database.query.callback.NoReturnPreparedStatementCallback;
+import tech.nmhillusion.n2mix.helper.database.query.callback.PreparedStatementCallback;
 
 import javax.sql.DataSource;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.function.BiFunction;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
@@ -69,6 +68,21 @@ public class ConnectionWrapper implements AutoCloseable {
         } else {
             throw new SQLException("Does not exist session or connection to execute SQL");
         }
+    }
+
+    @Deprecated
+    public PreparedStatement buildPreparedStatement(String sql) {
+        PreparedStatement preparedStatement = null;
+        try {
+            if (null != session) {
+                preparedStatement = session.doReturningWork(_conn -> _conn.prepareStatement(sql));
+            } else if (null != connection) {
+                preparedStatement = connection.prepareStatement(sql);
+            }
+        } catch (Exception ex) {
+            getLogger(this).error(ex);
+        }
+        return preparedStatement;
     }
 
     public CallableStatement buildPureCallableStatement(String callQuery) {

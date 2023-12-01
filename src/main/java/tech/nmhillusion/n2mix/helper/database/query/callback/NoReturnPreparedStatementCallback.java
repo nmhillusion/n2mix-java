@@ -1,4 +1,4 @@
-package tech.nmhillusion.n2mix.helper.database.query;
+package tech.nmhillusion.n2mix.helper.database.query.callback;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
