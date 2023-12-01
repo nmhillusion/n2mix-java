@@ -1,22 +1,21 @@
 package tech.nmhillusion.n2mix.helper.database.query;
 
 import org.hibernate.Session;
-import org.springframework.jdbc.core.JdbcTemplate;
-import tech.nmhillusion.n2mix.helper.database.query.callback.NoReturnPreparedStatementCallback;
-import tech.nmhillusion.n2mix.helper.database.query.callback.PreparedStatementCallback;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.util.function.BiFunction;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
-
+@Deprecated
 public class ConnectionWrapper implements AutoCloseable {
     public static final String RESULT_PARAM_NAME = "result";
     private final DataSource dataSource;
     private final BiFunction<DataSource, ConnectionWrapper, Boolean> closeConnectionWrapper;
-    private final JdbcTemplate jdbcTemplate;
     private Connection connection = null;
     private Session session = null;
 
@@ -26,7 +25,6 @@ public class ConnectionWrapper implements AutoCloseable {
         this.dataSource = dataSource;
         this.connection = connection;
         this.closeConnectionWrapper = closeConnectionWrapper;
-        this.jdbcTemplate = new JdbcTemplate(dataSource, true);
     }
 
     public ConnectionWrapper(DataSource dataSource,
@@ -35,7 +33,6 @@ public class ConnectionWrapper implements AutoCloseable {
         this.dataSource = dataSource;
         this.session = session;
         this.closeConnectionWrapper = closeConnectionWrapper;
-        this.jdbcTemplate = new JdbcTemplate(dataSource, true);
     }
 
     public Connection getConnection() {
@@ -50,27 +47,6 @@ public class ConnectionWrapper implements AutoCloseable {
         return session;
     }
 
-    public <T> T doReturningPreparedStatement(String sql, PreparedStatementCallback<T> callback_) throws SQLException {
-        if (null != session) {
-            return session.doReturningWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
-        } else if (null != connection) {
-            return callback_.apply(connection.prepareStatement(sql));
-        } else {
-            throw new SQLException("Does not exist session or connection to execute SQL");
-        }
-    }
-
-    public void doPreparedStatement(String sql, NoReturnPreparedStatementCallback callback_) throws SQLException {
-        if (null != session) {
-            session.doWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
-        } else if (null != connection) {
-            callback_.apply(connection.prepareStatement(sql));
-        } else {
-            throw new SQLException("Does not exist session or connection to execute SQL");
-        }
-    }
-
-    @Deprecated
     public PreparedStatement buildPreparedStatement(String sql) {
         PreparedStatement preparedStatement = null;
         try {
