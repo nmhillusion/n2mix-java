@@ -1,6 +1,8 @@
 package tech.nmhillusion.n2mix.helper.database.query;
 
 import org.springframework.lang.NonNull;
+import tech.nmhillusion.n2mix.helper.database.query.callback.CallableStatementCallback;
+import tech.nmhillusion.n2mix.helper.database.query.callback.NoReturnCallableStatementCallback;
 import tech.nmhillusion.n2mix.model.database.DbArgumentModel;
 import tech.nmhillusion.n2mix.model.database.DbInputModel;
 import tech.nmhillusion.n2mix.model.database.DbOutParameterModel;
@@ -20,7 +22,11 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 
 public class SqlCallableStatementBuilder {
+    @Deprecated
     private final ConnectionWrapper connectionWrapper;
+
+    private final StatementExecutor statementExecutor;
+
     private final LinkedList<DbInputModel> dbInputModels = new LinkedList<>();
     private String functionName;
     private String procedureName;
@@ -29,6 +35,12 @@ public class SqlCallableStatementBuilder {
 
     public SqlCallableStatementBuilder(ConnectionWrapper connectionWrapper) {
         this.connectionWrapper = connectionWrapper;
+        this.statementExecutor = null;
+    }
+
+    public SqlCallableStatementBuilder(StatementExecutor statementExecutor) {
+        this.connectionWrapper = null;
+        this.statementExecutor = statementExecutor;
     }
 
     /**
@@ -78,31 +90,6 @@ public class SqlCallableStatementBuilder {
                 .setSqlType(sqlType)
         );
         return this;
-    }
-
-    public CallableStatement build() throws SQLException {
-        if (!StringValidator.isBlank(functionName)) {
-            if (returnTypeOpt.isEmpty()) {
-                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
-            }
-
-            final CallableStatement funcCallableStatement = connectionWrapper.buildCallableStatementNamed(
-                    buildQueryBuilder(functionName),
-                    returnTypeOpt.get()
-            );
-            addDbInputsToCallable(funcCallableStatement);
-
-            return funcCallableStatement;
-        } else if (!StringValidator.isBlank(procedureName)) {
-            final CallableStatement procCallableStatement = connectionWrapper.buildPureCallableStatement(
-                    buildQueryBuilder(procedureName)
-            );
-            addDbInputsToCallable(procCallableStatement);
-
-            return procCallableStatement;
-        } else {
-            throw new SQLException("Does NOT set functionName or procedureName");
-        }
     }
 
     private void addDbInputsToCallable(CallableStatement callableStatement) throws SQLException {
@@ -182,5 +169,85 @@ public class SqlCallableStatementBuilder {
         }
 
         return finalQuery;
+    }
+
+    @Deprecated
+    public CallableStatement build() throws SQLException {
+        if (!StringValidator.isBlank(functionName)) {
+            if (returnTypeOpt.isEmpty()) {
+                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
+            }
+
+            final CallableStatement funcCallableStatement = connectionWrapper.buildCallableStatementNamed(
+                    buildQueryBuilder(functionName),
+                    returnTypeOpt.get()
+            );
+            addDbInputsToCallable(funcCallableStatement);
+
+            return funcCallableStatement;
+        } else if (!StringValidator.isBlank(procedureName)) {
+            final CallableStatement procCallableStatement = connectionWrapper.buildPureCallableStatement(
+                    buildQueryBuilder(procedureName)
+            );
+            addDbInputsToCallable(procCallableStatement);
+
+            return procCallableStatement;
+        } else {
+            throw new SQLException("Does NOT set functionName or procedureName");
+        }
+    }
+
+    public void build(StatementExecutor statementExecutor, NoReturnCallableStatementCallback noReturnCallback) throws SQLException {
+        if (!StringValidator.isBlank(functionName)) {
+            if (returnTypeOpt.isEmpty()) {
+                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
+            }
+
+            statementExecutor.doCallableStatementNamed(
+                    buildQueryBuilder(functionName),
+                    returnTypeOpt.get(),
+                    (callableStatement) -> {
+                        addDbInputsToCallable(callableStatement);
+                        noReturnCallback.apply(callableStatement);
+                    }
+            );
+        } else if (!StringValidator.isBlank(procedureName)) {
+            statementExecutor.doPureCallableStatement(
+                    buildQueryBuilder(functionName),
+                    (callableStatement) -> {
+                        addDbInputsToCallable(callableStatement);
+                        noReturnCallback.apply(callableStatement);
+                    }
+            );
+        } else {
+            throw new SQLException("Does NOT set functionName or procedureName");
+        }
+    }
+
+    public <T> T buildReturning(StatementExecutor statementExecutor, CallableStatementCallback<T> callback) throws SQLException {
+        if (!StringValidator.isBlank(functionName)) {
+            if (returnTypeOpt.isEmpty()) {
+                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
+            }
+
+            return statementExecutor.doReturningCallableStatementNamed(
+                    buildQueryBuilder(functionName),
+                    returnTypeOpt.get(),
+                    (callableStatement) -> {
+                        addDbInputsToCallable(callableStatement);
+                        return callback.apply(callableStatement);
+                    }
+            );
+        } else if (!StringValidator.isBlank(procedureName)) {
+            return statementExecutor.doReturningPureCallableStatement(
+                    buildQueryBuilder(functionName),
+                    (callableStatement) -> {
+                        addDbInputsToCallable(callableStatement);
+                        return callback.apply(callableStatement);
+                    }
+            );
+        } else {
+            throw new SQLException("Does NOT set functionName or procedureName");
+        }
     }
 }

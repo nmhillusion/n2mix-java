@@ -105,6 +105,36 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    public <T> T doReturningPureCallableStatement(String callQuery, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
+        return wrapperToSqlExceptionReturning(() -> {
+            if (null != session) {
+                return session.doReturningWork(_conn -> {
+                    final CallableStatement _callableStatement = _conn.prepareCall(
+                            "{ call " + callQuery + " } ");
+
+                    return callableStatementCallback.apply(_callableStatement);
+                });
+            } else {
+                throw new SQLException("Does not exist session or connection to execute SQL");
+            }
+        });
+    }
+
+    public void doPureCallableStatement(String callQuery, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
+        wrapperToSqlException(() -> {
+            if (null != session) {
+                session.doWork(_conn -> {
+                    final CallableStatement _callableStatement = _conn.prepareCall(
+                            "{ call " + callQuery + " } ");
+
+                    callableStatementCallback.apply(_callableStatement);
+                });
+            } else {
+                throw new SQLException("Does not exist session or connection to execute SQL");
+            }
+        });
+    }
+
     public <T> T doReturningCallableStatementNamed(String callQuery, int returnType, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
