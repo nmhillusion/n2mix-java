@@ -9,6 +9,7 @@ import tech.nmhillusion.n2mix.helper.database.query.callback.PreparedStatementCa
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.type.function.ThrowableNoInputFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidNoInputFunction;
+import tech.nmhillusion.n2mix.util.CastUtil;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
@@ -36,11 +37,26 @@ public class StatementExecutor implements Closeable {
         this.jdbcTemplate = new JdbcTemplate(dataSource, true);
     }
 
+    private <T extends Throwable> T getExceptionFromStacktrace(Throwable ex, Class<T> classExceptionToFind, T defaultValueIfNotFound) {
+        if (classExceptionToFind.isInstance(ex)) {
+            return CastUtil.safeCast(ex, classExceptionToFind);
+        }
+
+        final Throwable[] suppressedList = ex.getSuppressed();
+        for (Throwable throwable_ : suppressedList) {
+            if (classExceptionToFind.isInstance(throwable_)) {
+                return CastUtil.safeCast(throwable_, classExceptionToFind);
+            }
+        }
+
+        return defaultValueIfNotFound;
+    }
+
     private <T> T wrapperToSqlExceptionReturning(ThrowableNoInputFunction<T> func) throws SQLException {
         try {
             return func.apply();
         } catch (Throwable ex) {
-            throw new SQLException(ex);
+            throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
         }
     }
 
@@ -48,7 +64,7 @@ public class StatementExecutor implements Closeable {
         try {
             func.apply();
         } catch (Throwable ex) {
-            throw new SQLException(ex);
+            throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
         }
     }
 
