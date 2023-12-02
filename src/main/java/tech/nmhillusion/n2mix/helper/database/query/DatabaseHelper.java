@@ -2,13 +2,10 @@ package tech.nmhillusion.n2mix.helper.database.query;
 
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.lang.NonNull;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.util.Collections;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
@@ -28,55 +25,34 @@ public class DatabaseHelper {
         this.mSessionFactory = mSessionFactory;
     }
 
-    @Deprecated
-    public ConnectionWrapper getConnectionWrapper() {
-        return getConnectionWrapper(mSessionFactory);
-    }
-
-    @Deprecated
-    public ConnectionWrapper getConnectionWrapper(@NonNull SessionFactory sessionFactory) {
-        ConnectionWrapper connectionWrapper = null;
-        try {
-            warningLargeConnections();
-
-            final Session mSession = sessionFactory.openSession();
-            connectionWrapper = new ConnectionWrapper(mDataSource, mSession, this::closeConnectionWrapper);
-
-            return connectionWrapper;
-        } catch (Exception ex) {
-            getLogger(this).error(ex);
-            throw ex;
-        }
-    }
-
-    @Deprecated
-    public ConnectionWrapper getConnectionWrapper(@NonNull DataSource dataSource) {
-        ConnectionWrapper connectionWrapper = null;
-        try {
-            warningLargeConnections();
-            final Connection connectionDB = DataSourceUtils.getConnection(dataSource);
-            connectionWrapper = new ConnectionWrapper(dataSource, connectionDB, this::closeConnectionWrapper);
-
-            return connectionWrapper;
-        } catch (Exception ex) {
-            getLogger(this).error(ex);
-            throw ex;
-        }
-    }
-
     /**
      * @return get worker with Internal Session Factory
      */
+    @Deprecated
     public DatabaseWorker getWorker() {
         return getWorker(this.mSessionFactory);
     }
 
+    @Deprecated
     public DatabaseWorker getWorker(SessionFactory sessionFactory) {
         return getWorker(sessionFactory, mDataSource);
     }
 
+    @Deprecated
     public DatabaseWorker getWorker(SessionFactory sessionFactory, DataSource _dataSource) {
         return new DatabaseWorker(sessionFactory, _dataSource, this::closeConnectionWrapper);
+    }
+
+    public DatabaseExecutor getExecutor() {
+        return getExecutor(this.mSessionFactory);
+    }
+
+    public DatabaseExecutor getExecutor(SessionFactory sessionFactory) {
+        return getExecutor(sessionFactory, mDataSource);
+    }
+
+    public DatabaseExecutor getExecutor(SessionFactory sessionFactory, DataSource _dataSource) {
+        return new DatabaseExecutor(sessionFactory, _dataSource);
     }
 
 

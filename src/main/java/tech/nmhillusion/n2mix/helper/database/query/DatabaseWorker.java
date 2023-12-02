@@ -1,10 +1,10 @@
 package tech.nmhillusion.n2mix.helper.database.query;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableReturnType;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 import javax.sql.DataSource;
 import java.util.function.BiFunction;
@@ -15,6 +15,7 @@ import java.util.function.BiFunction;
  * created-by: nmhillusion
  */
 
+@Deprecated
 public class DatabaseWorker {
     private final DataSource dataSource;
     private final BiFunction<DataSource, ConnectionWrapper, Boolean> closeFunc;
