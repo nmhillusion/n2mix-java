@@ -9,7 +9,6 @@ import tech.nmhillusion.n2mix.helper.database.query.callback.PreparedStatementCa
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.type.function.ThrowableNoInputFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidNoInputFunction;
-import tech.nmhillusion.n2mix.util.CastUtil;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
@@ -18,6 +17,7 @@ import java.sql.CallableStatement;
 import java.sql.SQLException;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
+import static tech.nmhillusion.n2mix.util.ExceptionUtil.getExceptionFromStacktrace;
 
 /**
  * created by: chubb
@@ -35,21 +35,6 @@ public class StatementExecutor implements Closeable {
         this.dataSource = dataSource;
         this.session = session;
         this.jdbcTemplate = new JdbcTemplate(dataSource, true);
-    }
-
-    private <T extends Throwable> T getExceptionFromStacktrace(Throwable ex, Class<T> classExceptionToFind, T defaultValueIfNotFound) {
-        if (classExceptionToFind.isInstance(ex)) {
-            return CastUtil.safeCast(ex, classExceptionToFind);
-        }
-
-        final Throwable[] suppressedList = ex.getSuppressed();
-        for (Throwable throwable_ : suppressedList) {
-            if (classExceptionToFind.isInstance(throwable_)) {
-                return CastUtil.safeCast(throwable_, classExceptionToFind);
-            }
-        }
-
-        return defaultValueIfNotFound;
     }
 
     private <T> T wrapperToSqlExceptionReturning(ThrowableNoInputFunction<T> func) throws SQLException {

@@ -86,4 +86,19 @@ public abstract class ExceptionUtil {
             return outputStream_.toString(StandardCharsets.UTF_8);
         }
     }
+
+    public static <T extends Throwable> T getExceptionFromStacktrace(Throwable ex, Class<T> classExceptionToFind, T defaultValueIfNotFound) {
+        if (classExceptionToFind.isInstance(ex)) {
+            return CastUtil.safeCast(ex, classExceptionToFind);
+        }
+
+        final Throwable[] suppressedList = ex.getSuppressed();
+        for (Throwable throwable_ : suppressedList) {
+            if (classExceptionToFind.isInstance(throwable_)) {
+                return CastUtil.safeCast(throwable_, classExceptionToFind);
+            }
+        }
+
+        return defaultValueIfNotFound;
+    }
 }
