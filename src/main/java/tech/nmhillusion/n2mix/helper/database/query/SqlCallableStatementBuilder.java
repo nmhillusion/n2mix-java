@@ -197,7 +197,11 @@ public class SqlCallableStatementBuilder {
         }
     }
 
-    public void build(StatementExecutor statementExecutor, NoReturnCallableStatementCallback noReturnCallback) throws SQLException {
+    public void build(NoReturnCallableStatementCallback noReturnCallback) throws SQLException {
+        if (null == statementExecutor) {
+            throw new IllegalArgumentException("Fail when not exist statementExecutor");
+        }
+
         if (!StringValidator.isBlank(functionName)) {
             if (returnTypeOpt.isEmpty()) {
                 throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
@@ -213,7 +217,7 @@ public class SqlCallableStatementBuilder {
             );
         } else if (!StringValidator.isBlank(procedureName)) {
             statementExecutor.doPureCallableStatement(
-                    buildQueryBuilder(functionName),
+                    buildQueryBuilder(procedureName),
                     (callableStatement) -> {
                         addDbInputsToCallable(callableStatement);
                         noReturnCallback.apply(callableStatement);
@@ -224,7 +228,11 @@ public class SqlCallableStatementBuilder {
         }
     }
 
-    public <T> T buildReturning(StatementExecutor statementExecutor, CallableStatementCallback<T> callback) throws SQLException {
+    public <T> T buildReturning(CallableStatementCallback<T> callback) throws SQLException {
+        if (null == statementExecutor) {
+            throw new IllegalArgumentException("Fail when not exist statementExecutor");
+        }
+
         if (!StringValidator.isBlank(functionName)) {
             if (returnTypeOpt.isEmpty()) {
                 throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
@@ -240,7 +248,7 @@ public class SqlCallableStatementBuilder {
             );
         } else if (!StringValidator.isBlank(procedureName)) {
             return statementExecutor.doReturningPureCallableStatement(
-                    buildQueryBuilder(functionName),
+                    buildQueryBuilder(procedureName),
                     (callableStatement) -> {
                         addDbInputsToCallable(callableStatement);
                         return callback.apply(callableStatement);
