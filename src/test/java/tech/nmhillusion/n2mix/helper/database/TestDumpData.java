@@ -4,16 +4,15 @@ import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import tech.nmhillusion.n2mix.helper.database.query.ConnectionWrapper;
+import tech.nmhillusion.n2mix.helper.database.query.DatabaseExecutor;
 import tech.nmhillusion.n2mix.helper.database.query.DatabaseHelper;
-import tech.nmhillusion.n2mix.helper.database.query.DatabaseWorker;
 import tech.nmhillusion.n2mix.helper.database.query.SqlCallableStatementBuilder;
+import tech.nmhillusion.n2mix.helper.database.query.StatementExecutor;
 import tech.nmhillusion.n2mix.helper.database.result.WorkingResultSetHelper;
 import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import javax.sql.DataSource;
-import java.sql.CallableStatement;
 import java.sql.Types;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -44,25 +43,25 @@ public class TestDumpData {
         }
     }
 
-    private void insertMassData(Executor executor, DatabaseWorker databaseWorker) {
+    private void insertMassData(Executor executor, DatabaseExecutor databaseExecutor) {
         final int maxRowCount_ = 1_000_000;
         for (int idx = 0; idx < maxRowCount_; idx++) {
             int finalIdx = idx;
             executor.execute(() -> {
                 getLogger(this).info("start insert for " + finalIdx);
                 try {
-                    databaseWorker.doWork(conn -> {
-                        try (final CallableStatement call_ = new SqlCallableStatementBuilder(conn)
+                    databaseExecutor.doWork(statementExecutor -> {
+                        new SqlCallableStatementBuilder(statementExecutor)
                                 .setProcedureName("pkg_base_utils.p_insert_dump_data")
                                 .addArgument("i_type", Math.random() > 0.5f ? "INFO" : "DEBUG")
                                 .addArgument("i_value", Math.round(Math.random() * maxRowCount_))
-                                .build()) {
-                            call_.execute();
+                                .build(callableStatement -> {
+                                    callableStatement.execute();
 
-                            if (maxRowCount_ == finalIdx + 1) {
-                                finished = true;
-                            }
-                        }
+                                    if (maxRowCount_ == finalIdx + 1) {
+                                        finished = true;
+                                    }
+                                });
                     });
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
@@ -72,43 +71,41 @@ public class TestDumpData {
         }
     }
 
-    private void massReadData(Executor executor, DatabaseWorker dbWorker) {
+    private void massReadData(Executor executor, DatabaseExecutor databaseExecutor) {
         final int maxReadCount_ = 100;
         for (int idx = 0; idx < maxReadCount_; idx++) {
             int finalIdx = idx;
             executor.execute(() -> {
-                getLogger(this).info("start insert for " + finalIdx);
+                getLogger(this).info("start reading mass data for " + finalIdx);
                 try {
-                    dbWorker.doWork(conn -> {
-                        try (final CallableStatement call_ = new SqlCallableStatementBuilder(conn)
+                    databaseExecutor.doWork(statementExecutor -> {
+                        new SqlCallableStatementBuilder(statementExecutor)
                                 .setFunctionName("pkg_base_utils.f_read_dump_data")
                                 .setReturnType(Types.REF_CURSOR)
                                 .addArgument("i_type", Math.random() > 0.5f ? "INFO" : "DEBUG")
-                                .build()) {
-                            call_.execute();
+                                .build(call_ -> {
+                                    new WorkingResultSetHelper()
+                                            .setOutParameterNameOfResultSet(StatementExecutor.RESULT_PARAM_NAME)
+                                            .setCallableStatement(call_)
+                                            .doWorkOnResultSet(resultSet -> {
+                                                while (resultSet.next()) {
+                                                    getLogger(this).info(
+                                                            "row[" + resultSet.getRow() + "]: " +
+                                                                    resultSet.getString("type") + " - " +
+                                                                    resultSet.getLong("value")
+                                                    );
+                                                }
+                                            });
 
-                            new WorkingResultSetHelper()
-                                    .setOutParameterNameOfResultSet(ConnectionWrapper.RESULT_PARAM_NAME)
-                                    .setCallableStatement(call_)
-                                    .doWorkOnResultSet(resultSet -> {
-                                        while (resultSet.next()) {
-                                            getLogger(this).info(
-                                                    "row[" + resultSet.getRow() + "]: " +
-                                                            resultSet.getString("type") + " - " +
-                                                            resultSet.getLong("value")
-                                            );
-                                        }
-                                    });
-
-                            if (maxReadCount_ == finalIdx + 1) {
-                                finished = true;
-                            }
-                        }
+                                    if (maxReadCount_ == finalIdx + 1) {
+                                        finished = true;
+                                    }
+                                });
                     });
-                } catch (Throwable e) {
-                    throw new RuntimeException(e);
+                } catch (Throwable ex) {
+                    throw new RuntimeException(ex);
                 }
-                getLogger(this).info("END insert for " + finalIdx);
+                getLogger(this).info("END reading mass data for " + finalIdx);
             });
         }
     }
@@ -124,10 +121,11 @@ public class TestDumpData {
             final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
             try (final SessionFactory sessionFactory = databaseData_.getValue()) {
                 final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
-                final DatabaseWorker dbWorker = databaseHelper.getWorker();
-//                insertMassData(executor, dbWorker);
+                final var databaseExecutor = databaseHelper.getExecutor();
 
-                massReadData(executor, dbWorker);
+//                insertMassData(executor, databaseExecutor);
+
+                massReadData(executor, databaseExecutor);
 
                 while (!finished) ;
             }
