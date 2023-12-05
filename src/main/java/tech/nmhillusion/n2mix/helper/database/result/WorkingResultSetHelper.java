@@ -73,7 +73,7 @@ public class WorkingResultSetHelper {
         );
     }
 
-    public <R> R doReturningWorkOnResultSet(ThrowableFunction<ResultSet, R> func_) throws Throwable {
+    public <R> R doReturningWorkOnResultSet(ThrowableFunction<ResultSet, R> func_) throws SQLException {
         try {
             throwIfAbsentRequiredArguments();
 
