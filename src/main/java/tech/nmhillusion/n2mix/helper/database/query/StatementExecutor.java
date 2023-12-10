@@ -65,6 +65,29 @@ public class StatementExecutor implements Closeable {
         }
     }
 
+    /**
+     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * <b>Example:</b><br>
+     * To call in native query -->
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * update dds.t_document set title = ? where doc_id = ?
+     *
+     * </pre>
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * statementExecutor.doPreparedStatement("update dds.t_document set title = ? where doc_id = ?", (preparedStatement_) -> {
+     *     preparedStatement_.setString(1, 'The Code');
+     *     preparedStatement_.setInt(2, 2);
+     *     preparedStatement_.execute();
+     * });
+     *
+     * </pre>
+     *
+     * @param sql       a sql query stands for a prepared statement
+     * @param callback_ function will be called when execute
+     */
     public void doPreparedStatement(String sql, NoReturnPreparedStatementCallback callback_) throws SQLException {
         wrapperToSqlException(() -> {
             if (null != session) {
@@ -75,6 +98,33 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * <b>Example:</b><br>
+     * To call in native query -->
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * select * from dds.t_document where doc_id = ?
+     *
+     * </pre>
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * statementExecutor.doReturningPreparedStatement("select * from dds.t_document where doc_id = ?", (preparedStatement_) -> {
+     *     preparedStatement_.setInt(1, 2);
+     *     try (ResultSet resultSet = preparedStatement_.executeQuery()) {
+     *         List&lt;String&gt; resultList = new ArrayList<>();
+     *         // ... do something with resultSet
+     *
+     *         return resultList;
+     *     }
+     * });
+     *
+     * </pre>
+     *
+     * @param sql       a sql query stands for a prepared statement
+     * @param callback_ function will be called when execute and result of this callback will be used as return value of this function `doReturningPreparedStatement()`
+     */
     public <T> T doReturningPreparedStatement(String sql, PreparedStatementCallback<T> callback_) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
