@@ -66,7 +66,7 @@ public class StatementExecutor implements Closeable {
     }
 
     /**
-     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * Execute <i>PreparedStatement</i> with Ordinal Parameter <br>
      * <b>Example:</b><br>
      * To call in native query -->
      * <pre style='background-color: #333333; color: #008b8b;'>
@@ -99,7 +99,7 @@ public class StatementExecutor implements Closeable {
     }
 
     /**
-     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * Execute <i>PreparedStatement</i> with Ordinal Parameter <br>
      * <b>Example:</b><br>
      * To call in native query -->
      * <pre style='background-color: #333333; color: #008b8b;'>
@@ -110,7 +110,7 @@ public class StatementExecutor implements Closeable {
      * Code in java looks like:
      * <pre style='background-color: #333333; color: #008b8b;'>
      *
-     * statementExecutor.doReturningPreparedStatement("select * from dds.t_document where doc_id = ?", (preparedStatement_) -> {
+     * List&lt;String&gt; result_ = statementExecutor.doReturningPreparedStatement("select * from dds.t_document where doc_id = ?", (preparedStatement_) -> {
      *     preparedStatement_.setInt(1, 2);
      *     try (ResultSet resultSet = preparedStatement_.executeQuery()) {
      *         List&lt;String&gt; resultList = new ArrayList<>();
@@ -135,6 +135,33 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * <b>Example:</b><br>
+     * To call in native query -->
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * { ? = call ams.pkg_example.f_demo(i_username => ?) }
+     *
+     * </pre>
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * List&lt;String&gt; result_ = statementExecutor.doReturningCallableStatement("ams.pkg_example.f_demo(i_username => ?)", Types.REF_CURSOR, (call_) -> {
+     *     call.setString(2, "it_query");
+     *     call.execute();
+     *
+     *     Object result = call.getObject(1);
+     *     List&lt;String&gt; resultList = new ArrayList<>();
+     *     // ... do something
+     *     return resultList;
+     * });
+     * </pre>
+     *
+     * @param callQuery                 a sql query to call a procedure / function
+     * @param returnType                SQL return type of this procedure / function
+     * @param callableStatementCallback function will be called when execute and result of this callback will be used as return value of this function `doReturningCallableStatement()`
+     */
     public <T> T doReturningCallableStatement(String callQuery, int returnType, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
@@ -151,6 +178,30 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Execute <i>CallableStatement</i> with Ordinal Parameter <br>
+     * <b>Example:</b><br>
+     * To call in native query -->
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * { ? = call ams.pkg_example.f_demo(i_username => ?) }
+     *
+     * </pre>
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * statementExecutor.doCallableStatement("ams.pkg_example.f_demo(i_username => ?)", Types.REF_CURSOR, (call_) -> {
+     *     call.setString(2, "it_query");
+     *     call.execute();
+     *
+     *     Object result = call.getObject(1);
+     * });
+     * </pre>
+     *
+     * @param callQuery                 a sql query to call a procedure / function
+     * @param returnType                SQL return type of this procedure / function
+     * @param callableStatementCallback callback will be called when executing
+     */
     public void doCallableStatement(String callQuery, int returnType, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
             if (null != session) {
@@ -167,6 +218,11 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Using the same as StatementExecutor.doReturningCallableStatement(String, int, CallableStatementCallback) but without re-existed parameter for out parameter
+     *
+     * @see StatementExecutor#doReturningCallableStatement(String, int, CallableStatementCallback)
+     */
     public <T> T doReturningPureCallableStatement(String callQuery, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
@@ -182,6 +238,11 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Using the same as StatementExecutor.doCallableStatement(String, int, NoReturnCallableStatementCallback) but without re-existed parameter for out parameter
+     *
+     * @see StatementExecutor#doCallableStatement(String, int, NoReturnCallableStatementCallback)
+     */
     public void doPureCallableStatement(String callQuery, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
             if (null != session) {
@@ -197,6 +258,27 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Using the same as StatementExecutor.doReturningCallableStatement(String, int, CallableStatementCallback) but all parameter will be used in named parameter.
+     * So when using and pass parameter, we have to put by named parameter also
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * List&lt;String&gt; result_ = statementExecutor.doReturningCallableStatementNamed("ams.pkg_example.f_demo(i_username => :i_username)", Types.REF_CURSOR, (call_) -> {
+     *     call.setString("i_username", "it_query");
+     *     call.execute();
+     *
+     *     Object result = call.getObject(StatementExecutor.RESULT_PARAM_NAME);
+     *     List&lt;String&gt; resultList = new ArrayList<>();
+     *     if (result instanceof ResultSet resultSet) {
+     *       //...do something with resultSet
+     *     }
+     *     return resultList;
+     * });
+     * </pre>
+     *
+     * @see StatementExecutor#doReturningCallableStatement(String, int, CallableStatementCallback)
+     */
     public <T> T doReturningCallableStatementNamed(String callQuery, int returnType, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
@@ -216,6 +298,19 @@ public class StatementExecutor implements Closeable {
         });
     }
 
+    /**
+     * Using the same as StatementExecutor.doReturningCallableStatementNamed(String, int, CallableStatementCallback) but without return value
+     * Code in java looks like:
+     * <pre style='background-color: #333333; color: #008b8b;'>
+     *
+     * statementExecutor.doCallableStatementNamed("ams.pkg_example.f_demo_2(i_username => :i_username)", Types.REF_CURSOR, (call_) -> {
+     *     call.setString("i_username", "it_query");
+     *     call.execute();
+     * });
+     * </pre>
+     *
+     * @see StatementExecutor#doReturningCallableStatementNamed(String, int, CallableStatementCallback)
+     */
     public void doCallableStatementNamed(String callQuery, int returnType, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
             if (null != session) {
