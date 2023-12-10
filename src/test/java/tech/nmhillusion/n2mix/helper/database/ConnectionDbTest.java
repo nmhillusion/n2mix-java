@@ -254,4 +254,51 @@ public class ConnectionDbTest {
             }
         });
     }
+
+    @Test
+    void testConnectionWithReuseStatementExecutor() {
+        assumeFalse(isGitHubAction);
+
+        Assertions.assertThrowsExactly(java.sql.SQLException.class, () -> {
+            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            try (final SessionFactory sessionFactory = databaseData_.getValue()) {
+                final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
+                final var dbWorker = databaseHelper.getExecutor();
+
+                dbWorker.doWork(conn -> {
+                    try (conn) {
+                        conn.doPreparedStatement("""
+                                   select * from t_document
+                                   where id in (1, 2, 3)
+                                   order by id asc
+                                """, preparedStatement_ -> {
+                            try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
+                                final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder(resultSet)
+                                        .buildList(DocumentEntity.class);
+
+                                getLogger(this).info("[first time] document list: %s".formatted(documentEntities));
+                            }
+                        });
+                    }
+
+                    try (conn) {
+                        conn.doPreparedStatement("""
+                                   select * from t_document
+                                   where id in (2)
+                                """, preparedStatement_ -> {
+                            try (final ResultSet resultSet = preparedStatement_.executeQuery()) {
+                                final List<DocumentEntity> documentEntities = new ResultSetObjectBuilder(resultSet)
+                                        .buildList(DocumentEntity.class);
+
+                                getLogger(this).info("[second time] document list: %s".formatted(documentEntities));
+                            }
+                        });
+                    }
+                });
+            } catch (Exception ex) {
+                getLogger(this).error(ex);
+                throw ex;
+            }
+        });
+    }
 }

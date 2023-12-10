@@ -30,6 +30,8 @@ public class StatementExecutor implements Closeable {
     private final JdbcTemplate jdbcTemplate;
     private Session session = null;
 
+    private boolean isClosed = false;
+
     public StatementExecutor(DataSource dataSource,
                              Session session) {
         this.dataSource = dataSource;
@@ -37,8 +39,15 @@ public class StatementExecutor implements Closeable {
         this.jdbcTemplate = new JdbcTemplate(dataSource, true);
     }
 
+    private boolean isAbleToExecute() {
+        return !isClosed;
+    }
+
     private <T> T wrapperToSqlExceptionReturning(ThrowableNoInputFunction<T> func) throws SQLException {
         try {
+            if (!isAbleToExecute()) {
+                throw new SQLException("This statement executor has closed");
+            }
             return func.apply();
         } catch (Throwable ex) {
             throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
@@ -47,6 +56,9 @@ public class StatementExecutor implements Closeable {
 
     private void wrapperToSqlException(ThrowableVoidNoInputFunction func) throws SQLException {
         try {
+            if (!isAbleToExecute()) {
+                throw new SQLException("This statement executor has closed");
+            }
             func.apply();
         } catch (Throwable ex) {
             throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
@@ -175,6 +187,8 @@ public class StatementExecutor implements Closeable {
 
     @Override
     public void close() throws IOException {
+        isClosed = true;
+
         if (null != session) {
             session.close();
         }
