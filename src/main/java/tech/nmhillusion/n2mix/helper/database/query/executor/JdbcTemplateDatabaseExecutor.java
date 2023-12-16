@@ -14,7 +14,7 @@ import javax.sql.DataSource;
  * <p>
  * created date: 2023-12-16
  */
-public class JdbcTemplateDatabaseExecutor implements DatabaseExecutor {
+public class JdbcTemplateDatabaseExecutor extends DatabaseExecutor {
     private final DataSource dataSource;
     private final JdbcTemplate jdbcTemplate;
 
@@ -24,7 +24,7 @@ public class JdbcTemplateDatabaseExecutor implements DatabaseExecutor {
     }
 
     @Override
-    public <T> T doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
+    public <T> T __doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
         final ThrowableReturnType<T> returnTypeResult = new ThrowableReturnType<>();
         try (final StatementExecutor connectionWrapper = new StatementExecutor(dataSource, jdbcTemplate)) {
             returnTypeResult.setHasError(false);
@@ -43,7 +43,7 @@ public class JdbcTemplateDatabaseExecutor implements DatabaseExecutor {
     }
 
     @Override
-    public void doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
+    public void __doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
         final ThrowableReturnType<Void> returnTypeResult = new ThrowableReturnType<>();
         try (final StatementExecutor connectionWrapper = new StatementExecutor(dataSource, jdbcTemplate)) {
             returnTypeResult.setHasError(false);

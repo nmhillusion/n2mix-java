@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import tech.nmhillusion.n2mix.exception.InvalidArgument;
 import tech.nmhillusion.n2mix.helper.database.query.executor.HibernateSessionDatabaseExecutor;
+import tech.nmhillusion.n2mix.helper.database.query.executor.JdbcTemplateDatabaseExecutor;
+import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import javax.sql.DataSource;
 import java.util.Collections;
@@ -35,6 +37,8 @@ public class DatabaseHelper {
         if (null == mDataSource) {
             throw new InvalidArgument("DataSource must not be null");
         }
+
+        LogHelper.getLogger(this).info("Register database executor for " + classOfExecutor);
 
         this.mDataSource = mDataSource;
         this.mSessionFactory = mSessionFactory;
@@ -71,6 +75,8 @@ public class DatabaseHelper {
     public DatabaseExecutor getExecutor(SessionFactory sessionFactory, DataSource _dataSource) {
         if (classOfExecutor.isAssignableFrom(HibernateSessionDatabaseExecutor.class)) {
             return new HibernateSessionDatabaseExecutor(sessionFactory, _dataSource);
+        } else if (classOfExecutor.isAssignableFrom(JdbcTemplateDatabaseExecutor.class)) {
+            return new JdbcTemplateDatabaseExecutor(_dataSource, jdbcTemplate);
         } else {
             throw new RuntimeException("Class of executor is not supported: " + classOfExecutor);
         }

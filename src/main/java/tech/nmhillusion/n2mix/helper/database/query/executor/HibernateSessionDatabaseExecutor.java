@@ -15,7 +15,7 @@ import javax.sql.DataSource;
  * <p>
  * created date: 2023-12-16
  */
-public class HibernateSessionDatabaseExecutor implements DatabaseExecutor {
+public class HibernateSessionDatabaseExecutor extends DatabaseExecutor {
     private final DataSource dataSource;
     private final SessionFactory sessionFactory;
 
@@ -25,7 +25,7 @@ public class HibernateSessionDatabaseExecutor implements DatabaseExecutor {
     }
 
     @Override
-    public <T> T doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
+    public <T> T __doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
         try (final Session session = this.sessionFactory.openSession()) {
             final ThrowableReturnType<T> returnTypeResult = new ThrowableReturnType<>();
             try (final StatementExecutor connectionWrapper = new StatementExecutor(dataSource, session)) {
@@ -45,7 +45,7 @@ public class HibernateSessionDatabaseExecutor implements DatabaseExecutor {
     }
 
     @Override
-    public void doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
+    public void __doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
         try (final Session session = this.sessionFactory.openSession()) {
             final ThrowableReturnType<Void> returnTypeResult = new ThrowableReturnType<>();
             try (final StatementExecutor connectionWrapper = new StatementExecutor(dataSource, session)) {
