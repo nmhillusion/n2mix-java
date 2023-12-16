@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration;
  * created date: 2023-09-30
  */
 @Configuration
-@ComponentScan("tech.nmhillusion.n2mix.bootstrap")
+@ComponentScan({"tech.nmhillusion.n2mix.bootstrap", "tech.nmhillusion.n2mix.config"})
 public class SharedConfigurationReference {
 }
