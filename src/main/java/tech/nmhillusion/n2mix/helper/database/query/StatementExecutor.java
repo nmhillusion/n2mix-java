@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
@@ -27,7 +28,7 @@ import static tech.nmhillusion.n2mix.util.ExceptionUtil.getExceptionFromStacktra
 public class StatementExecutor implements Closeable {
     public static final String RESULT_PARAM_NAME = "result";
     private final DataSource dataSource;
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate = null;
     private Session session = null;
 
     private boolean isClosed = false;
@@ -36,7 +37,14 @@ public class StatementExecutor implements Closeable {
                              Session session) {
         this.dataSource = dataSource;
         this.session = session;
-        this.jdbcTemplate = new JdbcTemplate(dataSource, true);
+        this.jdbcTemplate = null;
+    }
+
+    public StatementExecutor(DataSource dataSource,
+                             JdbcTemplate jdbcTemplate) {
+        this.dataSource = dataSource;
+        this.session = null;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private boolean isAbleToExecute() {
@@ -92,6 +100,11 @@ public class StatementExecutor implements Closeable {
         wrapperToSqlException(() -> {
             if (null != session) {
                 session.doWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
+            } else if (null != jdbcTemplate) {
+                jdbcTemplate.execute(sql, (PreparedStatement preparedStatement_) -> {
+                    callback_.apply(preparedStatement_);
+                    return null;
+                });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
             }
@@ -129,6 +142,8 @@ public class StatementExecutor implements Closeable {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
                 return session.doReturningWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
+            } else if (null != jdbcTemplate) {
+                return jdbcTemplate.execute(sql, (PreparedStatement pre_) -> callback_.apply(pre_));
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
             }
@@ -164,13 +179,19 @@ public class StatementExecutor implements Closeable {
      */
     public <T> T doReturningCallableStatement(String callQuery, int returnType, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
+            final String callStatement = "{ ? = call " + callQuery + " } ";
             if (null != session) {
                 return session.doReturningWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(
-                            "{ ? = call " + callQuery + " } ");
+                    final CallableStatement _callableStatement = _conn.prepareCall(callStatement);
                     _callableStatement.registerOutParameter(1, returnType);
 
                     return callableStatementCallback.apply(_callableStatement);
+                });
+            } else if (null != jdbcTemplate) {
+                return jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
+                    call_.registerOutParameter(1, returnType);
+
+                    return callableStatementCallback.apply(call_);
                 });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
@@ -204,13 +225,21 @@ public class StatementExecutor implements Closeable {
      */
     public void doCallableStatement(String callQuery, int returnType, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
+            final String callStatement = "{ ? = call " + callQuery + " } ";
             if (null != session) {
                 session.doWork(_conn -> {
                     final CallableStatement _callableStatement = _conn.prepareCall(
-                            "{ ? = call " + callQuery + " } ");
+                            callStatement);
                     _callableStatement.registerOutParameter(1, returnType);
 
                     callableStatementCallback.apply(_callableStatement);
+                });
+            } else if (null != jdbcTemplate) {
+                jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
+                    call_.registerOutParameter(1, returnType);
+
+                    callableStatementCallback.apply(call_);
+                    return null;
                 });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
@@ -225,13 +254,16 @@ public class StatementExecutor implements Closeable {
      */
     public <T> T doReturningPureCallableStatement(String callQuery, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
+            final String callStatement = "{ call " + callQuery + " } ";
             if (null != session) {
                 return session.doReturningWork(_conn -> {
                     final CallableStatement _callableStatement = _conn.prepareCall(
-                            "{ call " + callQuery + " } ");
+                            callStatement);
 
                     return callableStatementCallback.apply(_callableStatement);
                 });
+            } else if (null != jdbcTemplate) {
+                return jdbcTemplate.execute(callStatement, callableStatementCallback::apply);
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
             }
@@ -245,12 +277,18 @@ public class StatementExecutor implements Closeable {
      */
     public void doPureCallableStatement(String callQuery, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
+            final String callStatement = "{ call " + callQuery + " } ";
             if (null != session) {
                 session.doWork(_conn -> {
                     final CallableStatement _callableStatement = _conn.prepareCall(
-                            "{ call " + callQuery + " } ");
+                            callStatement);
 
                     callableStatementCallback.apply(_callableStatement);
+                });
+            } else if (null != jdbcTemplate) {
+                jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
+                    callableStatementCallback.apply(call_);
+                    return null;
                 });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
@@ -281,16 +319,23 @@ public class StatementExecutor implements Closeable {
      */
     public <T> T doReturningCallableStatementNamed(String callQuery, int returnType, CallableStatementCallback<T> callableStatementCallback) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
+            final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
+            if (LogHelper.getLogger(this).isTraceEnabled()) {
+                getLogger(this).trace(queryString + " | returnType: " + returnType);
+            }
+
             if (null != session) {
                 return session.doReturningWork(_conn -> {
-                    final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-                    if (LogHelper.getLogger(this).isTraceEnabled()) {
-                        getLogger(this).trace(queryString + " | returnType: " + returnType);
-                    }
                     final CallableStatement _callableStatement = _conn.prepareCall(queryString);
                     _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
                     return callableStatementCallback.apply(_callableStatement);
+                });
+            } else if (null != jdbcTemplate) {
+                return jdbcTemplate.execute(queryString, (CallableStatement call_) -> {
+                    call_.registerOutParameter(RESULT_PARAM_NAME, returnType);
+
+                    return callableStatementCallback.apply(call_);
                 });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");
@@ -313,16 +358,25 @@ public class StatementExecutor implements Closeable {
      */
     public void doCallableStatementNamed(String callQuery, int returnType, NoReturnCallableStatementCallback callableStatementCallback) throws SQLException {
         wrapperToSqlException(() -> {
+            final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
+            if (LogHelper.getLogger(this).isTraceEnabled()) {
+                getLogger(this).trace(queryString + " | returnType: " + returnType);
+            }
+
             if (null != session) {
                 session.doWork(_conn -> {
-                    final String queryString = "{ call :" + RESULT_PARAM_NAME + " := " + callQuery + " }";
-                    if (LogHelper.getLogger(this).isTraceEnabled()) {
-                        getLogger(this).trace(queryString + " | returnType: " + returnType);
-                    }
+
                     final CallableStatement _callableStatement = _conn.prepareCall(queryString);
                     _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
                     callableStatementCallback.apply(_callableStatement);
+                });
+            } else if (null != jdbcTemplate) {
+                jdbcTemplate.execute(queryString, (CallableStatement call_) -> {
+                    call_.registerOutParameter(RESULT_PARAM_NAME, returnType);
+
+                    callableStatementCallback.apply(call_);
+                    return null;
                 });
             } else {
                 throw new SQLException("Does not exist session or connection to execute SQL");

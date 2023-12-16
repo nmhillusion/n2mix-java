@@ -3,7 +3,10 @@ package tech.nmhillusion.n2mix.helper.database.query;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.hibernate.SessionFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import tech.nmhillusion.n2mix.exception.InvalidArgument;
+import tech.nmhillusion.n2mix.helper.database.query.executor.HibernateSessionDatabaseExecutor;
 
 import javax.sql.DataSource;
 import java.util.Collections;
@@ -20,9 +23,23 @@ public class DatabaseHelper {
 
     private final SessionFactory mSessionFactory;
 
-    public DatabaseHelper(DataSource mDataSource, SessionFactory mSessionFactory) {
+    private final JdbcTemplate jdbcTemplate;
+
+    private final Class<? extends DatabaseExecutor> classOfExecutor;
+
+    public DatabaseHelper(DataSource mDataSource, SessionFactory mSessionFactory) throws InvalidArgument {
+        this(mDataSource, mSessionFactory, HibernateSessionDatabaseExecutor.class);
+    }
+
+    public DatabaseHelper(DataSource mDataSource, SessionFactory mSessionFactory, Class<? extends DatabaseExecutor> classOfExecutor) throws InvalidArgument {
+        if (null == mDataSource) {
+            throw new InvalidArgument("DataSource must not be null");
+        }
+
         this.mDataSource = mDataSource;
         this.mSessionFactory = mSessionFactory;
+        this.classOfExecutor = classOfExecutor;
+        this.jdbcTemplate = new JdbcTemplate(mDataSource);
     }
 
     /**
@@ -52,7 +69,11 @@ public class DatabaseHelper {
     }
 
     public DatabaseExecutor getExecutor(SessionFactory sessionFactory, DataSource _dataSource) {
-        return new DatabaseExecutor(sessionFactory, _dataSource);
+        if (classOfExecutor.isAssignableFrom(HibernateSessionDatabaseExecutor.class)) {
+            return new HibernateSessionDatabaseExecutor(sessionFactory, _dataSource);
+        } else {
+            throw new RuntimeException("Class of executor is not supported: " + classOfExecutor);
+        }
     }
 
 
