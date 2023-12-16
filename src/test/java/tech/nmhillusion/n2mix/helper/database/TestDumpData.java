@@ -18,8 +18,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getDataSourceAndSessionFactory;
 import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getGitHubRunId;
-import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getSessionFactory;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
@@ -118,7 +118,7 @@ public class TestDumpData {
 
         Assertions.assertDoesNotThrow(() -> {
             finished = false;
-            final Pair<DataSource, SessionFactory> databaseData_ = getSessionFactory();
+            final Pair<DataSource, SessionFactory> databaseData_ = getDataSourceAndSessionFactory();
             try (final SessionFactory sessionFactory = databaseData_.getValue()) {
                 final DatabaseHelper databaseHelper = new DatabaseHelper(databaseData_.getKey(), sessionFactory);
                 final var databaseExecutor = databaseHelper.getExecutor();

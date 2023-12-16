@@ -41,8 +41,12 @@ public class DatabaseConfigHelper {
     }
 
     public SessionFactory generateSessionFactory(DataSourceProperties dataSourceProperties) throws IOException {
+        return generateSessionFactory(dataSourceProperties, generateDataSource(dataSourceProperties));
+    }
+
+    public SessionFactory generateSessionFactory(DataSourceProperties dataSourceProperties, DataSource dataSource) throws IOException {
         final LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
-        sessionFactoryBean.setDataSource(generateDataSource(dataSourceProperties));
+        sessionFactoryBean.setDataSource(dataSource);
 
         final Properties hibernateProperties = new Properties();
         hibernateProperties.putAll(getHibernateProperties(dataSourceProperties));

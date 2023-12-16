@@ -31,7 +31,7 @@ public abstract class DatabaseTestHelper {
         }
     }
 
-    public static Pair<DataSource, SessionFactory> getSessionFactory() throws IOException {
+    public static Pair<DataSource, SessionFactory> getDataSourceAndSessionFactory() throws IOException {
         final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
 
         final String dbUrl = getDatabaseConfig("dataSource.url", String.class);
@@ -42,8 +42,21 @@ public abstract class DatabaseTestHelper {
         final DataSourceProperties dataSourceProperties = DataSourceProperties.generateFromDefaultDataSourceProperties("sample-datasource", oracleDataSourceConfig, dbUrl, dbUsername, dbPassword);
 
         final DataSource dataSource_ = databaseConfigHelper.generateDataSource(dataSourceProperties);
-        final SessionFactory sessionFactory_ = databaseConfigHelper.generateSessionFactory(dataSourceProperties);
+        final SessionFactory sessionFactory_ = databaseConfigHelper.generateSessionFactory(dataSourceProperties, dataSource_);
 
         return new Pair<>(dataSource_, sessionFactory_);
+    }
+
+    public static DataSource getDataSource() throws IOException {
+        final CommonConfigDataSourceValue.DataSourceConfig oracleDataSourceConfig = CommonConfigDataSourceValue.ORACLE_DATA_SOURCE_CONFIG;
+
+        final String dbUrl = getDatabaseConfig("dataSource.url", String.class);
+        final String dbUsername = getDatabaseConfig("dataSource.username", String.class);
+        final String dbPassword = getDatabaseConfig("dataSource.password", String.class);
+
+        final DatabaseConfigHelper databaseConfigHelper = DatabaseConfigHelper.INSTANCE;
+        final DataSourceProperties dataSourceProperties = DataSourceProperties.generateFromDefaultDataSourceProperties("sample-datasource", oracleDataSourceConfig, dbUrl, dbUsername, dbPassword);
+
+        return databaseConfigHelper.generateDataSource(dataSourceProperties);
     }
 }
