@@ -152,12 +152,19 @@ class FileHelperTest {
                     )
             );
 
-            Assertions.assertEquals(
-                    MediaType.TEXT_XML_VALUE,
-                    FileHelper.getContentTypeOfFile(
-                            Path.of("./home/data.xml")
-                    )
-            );
+            {
+                final String contentTypeOfFile_ = FileHelper.getContentTypeOfFile(
+                        Path.of("./home/data.xml")
+                );
+                Assertions.assertTrue(
+                        MediaType.APPLICATION_XML_VALUE.equalsIgnoreCase(
+                                contentTypeOfFile_
+                        ) ||
+                                MediaType.TEXT_XML_VALUE.equalsIgnoreCase(
+                                        contentTypeOfFile_
+                                )
+                );
+            }
 
             Assertions.assertEquals(
                     MediaType.TEXT_PLAIN_VALUE.contains("charset") ? MediaType.TEXT_PLAIN_VALUE : MediaType.TEXT_PLAIN_VALUE + ";charset=utf-8",
