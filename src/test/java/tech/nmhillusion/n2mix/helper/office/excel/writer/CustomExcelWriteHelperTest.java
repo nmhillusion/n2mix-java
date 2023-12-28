@@ -1,10 +1,12 @@
-package tech.nmhillusion.n2mix.helper.office;
+package tech.nmhillusion.n2mix.helper.office.excel.writer;
 
-import tech.nmhillusion.n2mix.helper.office.excel.writer.ExcelWriteHelper;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.helper.office.excel.writer.model.BasicExcelDataModel;
 import tech.nmhillusion.n2mix.helper.office.excel.writer.model.ExcelDataConverterModel;
 import tech.nmhillusion.n2mix.type.ChainList;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -14,18 +16,54 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-class ExcelWriteHelperTest {
+class CustomExcelWriteHelperTest {
+
+    private static final short TEST_FONT_SIZE = 22;
+    private static final String TEST_FONT_FAMILY = "Verdana";
+
+    private CellStyle createTestCellStyle(Workbook workbook) {
+        final CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.BLACK.getIndex());
+        headerStyle.setFillPattern(FillPatternType.NO_FILL);
+
+        final XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName(TEST_FONT_FAMILY);
+        font.setFontHeightInPoints(TEST_FONT_SIZE);
+        font.setBold(false);
+        headerStyle.setFont(font);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        return headerStyle;
+    }
+
+    private void callbackExportDataWithStyling(ExcelWriteHelper excelWriteHelper, Workbook workbook) {
+        for (ExcelDataSheet dataSheet_ : excelWriteHelper.getDataSheets()) {
+            final Sheet sheetRef = dataSheet_.getSheetRef();
+            final Row firstRow_ = sheetRef.getRow(0);
+            final short firstCellNum = firstRow_.getFirstCellNum();
+            final short lastCellNum = firstRow_.getLastCellNum();
+
+            for (int cellIdx = firstCellNum; cellIdx < lastCellNum; cellIdx++) {
+                final Cell cell_ = firstRow_.getCell(cellIdx);
+
+                cell_.setCellStyle(
+                        createTestCellStyle(sheetRef.getWorkbook())
+                );
+            }
+        }
+    }
 
     @Test
     void exportData() {
         assertDoesNotThrow(() -> {
-            final byte[] excelData = new ExcelWriteHelper()
+            final ExcelWriteHelper excelWriteHelper = new ExcelWriteHelper()
                     .addSheetData(new BasicExcelDataModel()
                             .setHeaders(Collections.singletonList(Arrays.asList("ID", "Name")))
                             .setBodyData(Collections.singletonList(Arrays.asList("1", "Rondônia")))
                             .setSheetName("user_data")
-                    )
-                    .build();
+                    );
+            final byte[] excelData = excelWriteHelper
+                    .build(this::callbackExportDataWithStyling);
             try (OutputStream os = Files.newOutputStream(new File("test.data.xlsx").toPath())) {
                 os.write(excelData);
                 os.flush();
@@ -63,7 +101,7 @@ class ExcelWriteHelperTest {
                                     "Author", Book::getAuthor
                             )
                     )
-                    .build();
+                    .build(this::callbackExportDataWithStyling);
             try (OutputStream os = Files.newOutputStream(new File("test.data.converter.xlsx").toPath())) {
                 os.write(excelData);
                 os.flush();

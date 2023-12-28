@@ -25,6 +25,8 @@ public class ExcelDataSheet {
     private ExcelDataModel excelDataModel;
     private int mainRowIndex = 0;
 
+    private Sheet sheetRef;
+
     public ExcelDataModel getExcelDataModel() {
         return excelDataModel;
     }
@@ -49,6 +51,10 @@ public class ExcelDataSheet {
     }
 
     public void addHeaders(Workbook workbook, Sheet sheet) {
+        if (null == sheetRef) {
+            sheetRef = sheet;
+        }
+
         if (!CollectionUtil.isNullOrEmpty(excelDataModel.getHeaders())) {
             for (List<String> headerData : excelDataModel.getHeaders()) {
                 if (!CollectionUtil.isNullOrEmpty(headerData)) {
@@ -84,6 +90,10 @@ public class ExcelDataSheet {
     }
 
     public void addBodyData(Workbook workbook, Sheet sheet) throws MissingDataException {
+        if (null == sheetRef) {
+            sheetRef = sheet;
+        }
+
         final List<List<String>> bodyData = excelDataModel.getBodyData();
         if (!CollectionUtil.isNullOrEmpty(bodyData)) {
             for (List<String> rowData : bodyData) {
@@ -97,5 +107,9 @@ public class ExcelDataSheet {
                 }
             }
         }
+    }
+
+    public Sheet getSheetRef() {
+        return sheetRef;
     }
 }
