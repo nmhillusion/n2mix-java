@@ -4,7 +4,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import tech.nmhillusion.n2mix.exception.MissingDataException;
-import tech.nmhillusion.n2mix.helper.office.excel.writer.model.CallbackBeforeFlushExcelData;
+import tech.nmhillusion.n2mix.helper.office.excel.writer.model.CallbackAddedDataToSheet;
 import tech.nmhillusion.n2mix.helper.office.excel.writer.model.ExcelDataModel;
 
 import java.io.ByteArrayOutputStream;
@@ -38,7 +38,7 @@ public class ExcelWriteHelper {
         return build(null);
     }
 
-    public byte[] build(CallbackBeforeFlushExcelData callbackFunc) throws IOException, MissingDataException {
+    public byte[] build(CallbackAddedDataToSheet callbackFunc) throws IOException, MissingDataException {
         try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
             for (ExcelDataSheet dataSheet : dataSheets) {
@@ -46,10 +46,10 @@ public class ExcelWriteHelper {
 
                 dataSheet.addHeaders(workbook, sheet);
                 dataSheet.addBodyData(workbook, sheet);
-            }
 
-            if (null != callbackFunc) {
-                callbackFunc.exec(this, workbook);
+                if (null != callbackFunc) {
+                    callbackFunc.exec(this, dataSheet, workbook, sheet);
+                }
             }
 
             workbook.write(byteArrayOutputStream);

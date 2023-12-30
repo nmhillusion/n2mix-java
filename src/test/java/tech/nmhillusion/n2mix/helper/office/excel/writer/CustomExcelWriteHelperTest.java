@@ -36,9 +36,8 @@ class CustomExcelWriteHelperTest {
         return headerStyle;
     }
 
-    private void callbackExportDataWithStyling(ExcelWriteHelper excelWriteHelper, Workbook workbook) {
-        for (ExcelDataSheet dataSheet_ : excelWriteHelper.getDataSheets()) {
-            final Sheet sheetRef = dataSheet_.getSheetRef();
+    private void callbackExportDataWithStyling(ExcelWriteHelper self, ExcelDataSheet dataSheet, Workbook workbookRef, Sheet sheetRef) {
+
             final Row firstRow_ = sheetRef.getRow(0);
             final short firstCellNum = firstRow_.getFirstCellNum();
             final short lastCellNum = firstRow_.getLastCellNum();
@@ -50,7 +49,6 @@ class CustomExcelWriteHelperTest {
                         createTestCellStyle(sheetRef.getWorkbook())
                 );
             }
-        }
     }
 
     @Test
