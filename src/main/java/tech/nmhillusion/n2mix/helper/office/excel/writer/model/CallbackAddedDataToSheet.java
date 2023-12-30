@@ -14,5 +14,5 @@ import java.io.IOException;
  */
 @FunctionalInterface
 public interface CallbackAddedDataToSheet {
-    void exec(ExcelWriteHelper self, ExcelDataSheet dataSheet, Workbook workbookRef, Sheet sheet) throws IOException;
+    void exec(ExcelWriteHelper self, ExcelDataSheet dataSheet, Workbook workbookRef, Sheet sheetRef) throws IOException;
 }
