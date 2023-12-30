@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import tech.nmhillusion.n2mix.exception.MissingDataException;
+import tech.nmhillusion.n2mix.helper.office.excel.writer.model.CallbackAddedDataToSheet;
 import tech.nmhillusion.n2mix.helper.office.excel.writer.model.ExcelDataModel;
 import tech.nmhillusion.n2mix.util.CollectionUtil;
 import tech.nmhillusion.n2mix.util.NumberUtil;
@@ -24,6 +25,8 @@ public class ExcelDataSheet {
 
     private ExcelDataModel excelDataModel;
     private int mainRowIndex = 0;
+
+    private CallbackAddedDataToSheet callbackFunc;
 
     private Sheet sheetRef;
 
@@ -111,5 +114,14 @@ public class ExcelDataSheet {
 
     public Sheet getSheetRef() {
         return sheetRef;
+    }
+
+    public CallbackAddedDataToSheet getCallbackFunc() {
+        return callbackFunc;
+    }
+
+    public ExcelDataSheet setCallbackFunc(CallbackAddedDataToSheet callbackFunc) {
+        this.callbackFunc = callbackFunc;
+        return this;
     }
 }

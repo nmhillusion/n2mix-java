@@ -23,9 +23,14 @@ public class ExcelWriteHelper {
     private final List<ExcelDataSheet> dataSheets = new ArrayList<>();
 
     public ExcelWriteHelper addSheetData(ExcelDataModel excelDataOfSheet) {
+        return addSheetData(excelDataOfSheet, null);
+    }
+
+    public ExcelWriteHelper addSheetData(ExcelDataModel excelDataOfSheet, CallbackAddedDataToSheet callbackFunc) {
         dataSheets.add(
                 new ExcelDataSheet()
                         .setExcelDataModel(excelDataOfSheet)
+                        .setCallbackFunc(callbackFunc)
         );
         return this;
     }
@@ -35,10 +40,6 @@ public class ExcelWriteHelper {
     }
 
     public byte[] build() throws IOException, MissingDataException {
-        return build(null);
-    }
-
-    public byte[] build(CallbackAddedDataToSheet callbackFunc) throws IOException, MissingDataException {
         try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
             for (ExcelDataSheet dataSheet : dataSheets) {
@@ -47,8 +48,8 @@ public class ExcelWriteHelper {
                 dataSheet.addHeaders(workbook, sheet);
                 dataSheet.addBodyData(workbook, sheet);
 
-                if (null != callbackFunc) {
-                    callbackFunc.exec(this, dataSheet, workbook, sheet);
+                if (null != dataSheet.getCallbackFunc()) {
+                    dataSheet.getCallbackFunc().exec(this, dataSheet, workbook, sheet);
                 }
             }
 

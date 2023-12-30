@@ -59,15 +59,17 @@ class CustomExcelWriteHelperTest {
         assertDoesNotThrow(() -> {
             final ExcelWriteHelper excelWriteHelper = new ExcelWriteHelper()
                     .addSheetData(new BasicExcelDataModel()
-                            .setHeaders(Collections.singletonList(Arrays.asList("ID", "Name")))
-                            .setBodyData(List.of(
-                                    Arrays.asList("1", "Rondônia")
-                                    , Arrays.asList("2", "This is a very long cell content")
-                            ))
-                            .setSheetName("user_data")
+                                    .setHeaders(Collections.singletonList(Arrays.asList("ID", "Name")))
+                                    .setBodyData(List.of(
+                                            Arrays.asList("1", "Rondônia")
+                                            , Arrays.asList("2", "This is a very long cell content")
+                                    ))
+                                    .setSheetName("user_data")
+                            ,
+                            this::callbackExportDataWithStyling
                     );
             final byte[] excelData = excelWriteHelper
-                    .build(this::callbackExportDataWithStyling);
+                    .build();
             try (OutputStream os = Files.newOutputStream(new File("test.data.xlsx").toPath())) {
                 os.write(excelData);
                 os.flush();
@@ -80,32 +82,34 @@ class CustomExcelWriteHelperTest {
         assertDoesNotThrow(() -> {
             final byte[] excelData = new ExcelWriteHelper()
                     .addSheetData(new ExcelDataConverterModel<Book>()
-                            .setSheetName("books")
-                            .setRawData(new ChainList<Book>()
-                                    .chainAdd(
-                                            new Book()
-                                                    .setTitle("Cook Code")
-                                                    .setAuthor("Abraham")
-                                                    .setPrice(109.2f)
+                                    .setSheetName("books")
+                                    .setRawData(new ChainList<Book>()
+                                            .chainAdd(
+                                                    new Book()
+                                                            .setTitle("Cook Code")
+                                                            .setAuthor("Abraham")
+                                                            .setPrice(109.2f)
+                                            )
+                                            .chainAdd(
+                                                    new Book()
+                                                            .setTitle("Failure Programing")
+                                                            .setAuthor("Joe Lin")
+                                                            .setPrice(208.11f)
+                                            )
                                     )
-                                    .chainAdd(
-                                            new Book()
-                                                    .setTitle("Failure Programing")
-                                                    .setAuthor("Joe Lin")
-                                                    .setPrice(208.11f)
+                                    .addColumnConverters(
+                                            "Title", Book::getTitle
                                     )
-                            )
-                            .addColumnConverters(
-                                    "Title", Book::getTitle
-                            )
-                            .addColumnConverters(
-                                    "Price", b -> String.format("%.3f USD", b.getPrice())
-                            )
-                            .addColumnConverters(
-                                    "Author", Book::getAuthor
-                            )
+                                    .addColumnConverters(
+                                            "Price", b -> String.format("%.3f USD", b.getPrice())
+                                    )
+                                    .addColumnConverters(
+                                            "Author", Book::getAuthor
+                                    )
+                            ,
+                            this::callbackExportDataWithStyling
                     )
-                    .build(this::callbackExportDataWithStyling);
+                    .build();
             try (OutputStream os = Files.newOutputStream(new File("test.data.converter.xlsx").toPath())) {
                 os.write(excelData);
                 os.flush();
