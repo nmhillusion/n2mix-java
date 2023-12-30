@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -37,18 +38,20 @@ class CustomExcelWriteHelperTest {
     }
 
     private void callbackExportDataWithStyling(ExcelWriteHelper self, ExcelDataSheet dataSheet, Workbook workbookRef, Sheet sheetRef) {
+        final Row firstRow_ = sheetRef.getRow(0);
+        final short firstCellNum = firstRow_.getFirstCellNum();
+        final short lastCellNum = firstRow_.getLastCellNum();
 
-            final Row firstRow_ = sheetRef.getRow(0);
-            final short firstCellNum = firstRow_.getFirstCellNum();
-            final short lastCellNum = firstRow_.getLastCellNum();
+        for (int cellIdx = firstCellNum; cellIdx < lastCellNum; cellIdx++) {
+            final Cell cell_ = firstRow_.getCell(cellIdx);
 
-            for (int cellIdx = firstCellNum; cellIdx < lastCellNum; cellIdx++) {
-                final Cell cell_ = firstRow_.getCell(cellIdx);
+            cell_.setCellStyle(
+                    createTestCellStyle(sheetRef.getWorkbook())
+            );
+        }
 
-                cell_.setCellStyle(
-                        createTestCellStyle(sheetRef.getWorkbook())
-                );
-            }
+        sheetRef.autoSizeColumn(1, true);
+        sheetRef.autoSizeColumn(2, true);
     }
 
     @Test
@@ -57,7 +60,10 @@ class CustomExcelWriteHelperTest {
             final ExcelWriteHelper excelWriteHelper = new ExcelWriteHelper()
                     .addSheetData(new BasicExcelDataModel()
                             .setHeaders(Collections.singletonList(Arrays.asList("ID", "Name")))
-                            .setBodyData(Collections.singletonList(Arrays.asList("1", "Rondônia")))
+                            .setBodyData(List.of(
+                                    Arrays.asList("1", "Rondônia")
+                                    , Arrays.asList("2", "This is a very long cell content")
+                            ))
                             .setSheetName("user_data")
                     );
             final byte[] excelData = excelWriteHelper
