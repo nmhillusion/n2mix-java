@@ -1,13 +1,14 @@
 package tech.nmhillusion.n2mix.helper.render.pdf;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.util.Matrix;
+import tech.nmhillusion.n2mix.util.IOStreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +40,9 @@ public class ResizePdfHelper {
     public byte[] render(InputStream originalData) throws IOException {
         byte[] renderedData_;
 
-        try (final PDDocument pdDocumentSrc = PDDocument.load(originalData);
-             final PDDocument pdDocumentOut = new PDDocument(MemoryUsageSetting.setupMixed(MAXIMUM_BUFFER_PDF_IN_BYTES))) {
+        final byte[] pdfDataInBytes = IOStreamUtil.convertInputStreamToByteArray(originalData);
+        try (final PDDocument pdDocumentSrc = Loader.loadPDF(pdfDataInBytes);
+             final PDDocument pdDocumentOut = new PDDocument()) {
             final PDPageTree documentPages = pdDocumentSrc.getPages();
             for (final PDPage page_ : documentPages) {
                 final PDRectangle currentMediaBox = page_.getMediaBox();

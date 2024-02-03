@@ -1,9 +1,11 @@
 package tech.nmhillusion.n2mix.helper.render.pdf;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
+import tech.nmhillusion.n2mix.util.IOStreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +44,8 @@ public class MergeMultiplePdfsIntoOnePdfHelper {
         try (final PDDocument pdDocument = new PDDocument()) {
 
             for (InputStream pdfPagesDatum : pdfPagesData) {
-                final PDDocument pdDocumentData = PDDocument.load(pdfPagesDatum);
+                final byte[] pdfDataInBytes = IOStreamUtil.convertInputStreamToByteArray(pdfPagesDatum);
+                final PDDocument pdDocumentData = Loader.loadPDF(pdfDataInBytes);
                 pdDocumentPageList.add(pdDocumentData);
 
                 final List<PDPage> pdfPageList = createPdfPageFromByteArray(pdDocumentData);
