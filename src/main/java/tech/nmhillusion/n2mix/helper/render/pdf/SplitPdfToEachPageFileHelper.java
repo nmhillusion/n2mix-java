@@ -1,10 +1,8 @@
 package tech.nmhillusion.n2mix.helper.render.pdf;
 
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
-import tech.nmhillusion.n2mix.util.IOStreamUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,8 +21,7 @@ public class SplitPdfToEachPageFileHelper {
     public List<byte[]> splitData(InputStream inputPdfData) throws IOException {
         final List<byte[]> pagesData = new ArrayList<>();
 
-        final byte[] pdfDataInBytes = IOStreamUtil.convertInputStreamToByteArray(inputPdfData);
-        try (final PDDocument pdDocument = Loader.loadPDF(pdfDataInBytes)) {
+        try (final PDDocument pdDocument = PDDocument.load(inputPdfData)) {
             final PDPageTree documentPages = pdDocument.getPages();
             final int pagesCount = documentPages.getCount();
             for (int pageIdx = 0; pageIdx < pagesCount; ++pageIdx) {

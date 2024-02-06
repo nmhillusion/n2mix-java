@@ -1,6 +1,5 @@
 package tech.nmhillusion.n2mix.helper.render.pdf;
 
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
@@ -9,7 +8,6 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import tech.nmhillusion.n2mix.constant.ImageCompressionType;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
-import tech.nmhillusion.n2mix.util.IOStreamUtil;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -131,8 +129,7 @@ public class PdfToTiffImageHelper {
         );
         final List<byte[]> tiffDataList = new ArrayList<>();
 
-        final byte[] pdfDataInBytes = IOStreamUtil.convertInputStreamToByteArray(pdfData);
-        try (final PDDocument pdDocument = Loader.loadPDF(pdfDataInBytes)) {
+        try (final PDDocument pdDocument = PDDocument.load(pdfData)) {
             final PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
 
             ///////////////////////////////////////////////////
