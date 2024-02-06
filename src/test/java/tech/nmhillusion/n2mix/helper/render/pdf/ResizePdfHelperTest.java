@@ -17,14 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
  */
 class ResizePdfHelperTest {
     private static final String OUTPUT_DIR = "outputs";
-    private static final boolean WILL_DELETE_ON_COMPLETE = true;
+    private static final boolean WILL_DELETE_ON_COMPLETE = false;
 
     @Test
     void testRender() {
         assertDoesNotThrow(() -> {
-            final String inpFileName = "pdf/TheVerge.pdf";
+            final String inpFileName = "pdf/contract.pdf";
             try (final InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(inpFileName)) {
-                final ResizePdfHelper resizePdfHelper = new ResizePdfHelper(400, 600);
+                final ResizePdfHelper resizePdfHelper = new ResizePdfHelper(595, 842);
 
                 final byte[] renderedData_ = resizePdfHelper.render(pdfStream);
 
