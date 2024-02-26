@@ -49,7 +49,6 @@ public class PiLoggerConfig {
         final LogConfigModel piLoggerConfig = LogHelper.getDefaultPiLoggerConfig();
         piLoggerConfig
                 .setColoring("always".equalsIgnoreCase(outputAnsiEnabled))
-                .setDisplayLineNumber(displayLineNumber)
         ;
 
         if (!StringValidator.isBlank(loggingPatternDateFormat)) {

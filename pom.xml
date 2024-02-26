@@ -24,6 +24,10 @@
 
     <repositories>
         <repository>
+            <id>main</id>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -176,7 +180,7 @@
         <dependency>
             <groupId>com.github.nmhillusion</groupId>
             <artifactId>pi-logger</artifactId>
-            <version>2024.1.4</version>
+            <version>2024.2.26</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc11 -->

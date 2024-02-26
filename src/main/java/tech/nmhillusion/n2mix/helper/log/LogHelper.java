@@ -16,7 +16,6 @@ public class LogHelper {
     private final Map<String, MixLogger> logFactory = new TreeMap<>();
     private final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
             .setColoring(true)
-            .setDisplayLineNumber(true)
             .setLogLevel(LogLevel.DEBUG)
             .setIsOutputToFile(false)
             .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
@@ -31,7 +30,6 @@ public class LogHelper {
     public static void setDefaultPiLoggerConfig(LogConfigModel logConfig) {
         PiLoggerFactory.getDefaultLogConfig()
                 .setColoring(logConfig.getColoring())
-                .setDisplayLineNumber(logConfig.getDisplayLineNumber())
                 .setIsOutputToFile(logConfig.isOutputToFile())
                 .setLogFilePath(logConfig.getLogFilePath())
                 .setLogLevel(logConfig.getLogLevel())
