@@ -139,10 +139,12 @@ public class MixLogger {
     }
 
     public void infoDetail(String marker, String format_, Object... params) {
-        if (!isPiLogger) {
-            logger.info(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
-        } else {
-            logger.info(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+        if (isInfoEnabled()) {
+            if (!isPiLogger) {
+                logger.info(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+            } else {
+                logger.info(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+            }
         }
     }
 
@@ -163,10 +165,12 @@ public class MixLogger {
     }
 
     public void debugDetail(String marker, String format_, Object... params) {
-        if (!isPiLogger) {
-            logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
-        } else {
-            logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+        if (isDebugEnabled()) {
+            if (!isPiLogger) {
+                logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+            } else {
+                logger.debug(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+            }
         }
     }
 
@@ -187,10 +191,12 @@ public class MixLogger {
     }
 
     public void warnDetail(String marker, String format_, Object... params) {
-        if (!isPiLogger) {
-            logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
-        } else {
-            logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+        if (isWarnEnabled()) {
+            if (!isPiLogger) {
+                logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+            } else {
+                logger.warn(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+            }
         }
     }
 
@@ -211,10 +217,12 @@ public class MixLogger {
     }
 
     public void traceDetail(String marker, String format_, Object... params) {
-        if (!isPiLogger) {
-            logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
-        } else {
-            logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+        if (isTraceEnabled()) {
+            if (!isPiLogger) {
+                logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+            } else {
+                logger.trace(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+            }
         }
     }
 
@@ -235,10 +243,12 @@ public class MixLogger {
     }
 
     public void errorDetail(String marker, String format_, Object... params) {
-        if (!isPiLogger) {
-            logger.error(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
-        } else {
-            logger.error(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+        if (isErrorEnabled()) {
+            if (!isPiLogger) {
+                logger.error(MarkerFactory.getMarker(marker), getTemplateLog(format_), doFormattedString(format_, params));
+            } else {
+                logger.error(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
+            }
         }
     }
 }
