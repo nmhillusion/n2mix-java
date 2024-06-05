@@ -4,6 +4,7 @@ import tech.nmhillusion.n2mix.model.cli.ParameterModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * created by: nmhillusion
@@ -11,6 +12,16 @@ import java.util.List;
  * created date: 2024-06-05
  */
 public abstract class ParameterParser {
+    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("-{1,2}[a-zA-Z0-9_]+");
+
+    private static String getParameterName(String arg) {
+        if (arg.startsWith("-")) {
+            return arg.replaceAll("-", "");
+        } else {
+            return null;
+        }
+    }
+
     public static List<ParameterModel> parse(String[] args) {
         final List<ParameterModel> parameterModels = new ArrayList<>();
 
@@ -20,9 +31,14 @@ public abstract class ParameterParser {
         int argsLength = args.length;
         for (int argIdx = 0; argIdx < argsLength; ++argIdx) {
             final String arg_ = args[argIdx];
+            final String parameterName = getParameterName(arg_);
 
             ParameterType currentParameterType = null;
             if (arg_.startsWith("-")) {
+                if (!VALID_NAME_PATTERN.matcher(arg_).matches()) {
+                    throw new IllegalArgumentException("Parameter name is invalid: " + arg_);
+                }
+
                 currentParameterType = ParameterType.NAME;
             } else {
                 currentParameterType = ParameterType.VALUE;
@@ -40,7 +56,7 @@ public abstract class ParameterParser {
                     parameterModel = null;
                 } else if (ParameterType.NAME == currentParameterType) {
                     parameterModels.add(parameterModel);
-                    parameterModel = new ParameterModel().setName(arg_);
+                    parameterModel = new ParameterModel().setName(parameterName);
                 }
             } else if (ParameterType.VALUE == lastParameterType) {
                 if (ParameterType.VALUE == currentParameterType) {
@@ -49,14 +65,14 @@ public abstract class ParameterParser {
                 }
 
                 if (ParameterType.NAME == currentParameterType) {
-                    parameterModel.setName(arg_);
+                    parameterModel.setName(parameterName);
                 }
             } else if (null == lastParameterType) {
                 if (ParameterType.VALUE == currentParameterType) {
                     parameterModels.add(new ParameterModel().setValue(arg_));
                     parameterModel = null;
                 } else if (ParameterType.NAME == currentParameterType) {
-                    parameterModel.setName(arg_);
+                    parameterModel.setName(parameterName);
                 }
             }
 

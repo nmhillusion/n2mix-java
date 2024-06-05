@@ -5,8 +5,7 @@ import tech.nmhillusion.n2mix.model.cli.ParameterModel;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * created by: nmhillusion
@@ -24,8 +23,32 @@ class ParameterParserTest {
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(1, parameterModels.size());
-        assertEquals("-h", parameterModels.get(0).getName());
+        assertEquals("h", parameterModels.get(0).getName());
         assertNull(parameterModels.get(0).getValue());
+    }
+
+    @Test
+    void parseSimpleCommandLong() {
+        final String[] args = new String[]{
+                "--help"
+        };
+
+        final List<ParameterModel> parameterModels = ParameterParser.parse(args);
+
+        assertEquals(1, parameterModels.size());
+        assertEquals("help", parameterModels.get(0).getName());
+        assertNull(parameterModels.get(0).getValue());
+    }
+
+    @Test
+    void throwInvalidParameterName() {
+        final String[] args = new String[]{
+                "---h"
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ParameterParser.parse(args);
+        });
     }
 
     @Test
@@ -50,23 +73,32 @@ class ParameterParserTest {
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(1, parameterModels.size());
-        assertEquals("-t", parameterModels.get(0).getName());
+        assertEquals("t", parameterModels.get(0).getName());
         assertEquals("200", parameterModels.get(0).getValue());
     }
 
     @Test
     void parseCommandWithTwoValues() {
         final String[] args = new String[]{
-                "-t", "200", "-p", "300"
+                "-t", "200", "--process", "300"
         };
 
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(2, parameterModels.size());
-        assertEquals("-t", parameterModels.get(0).getName());
+        assertEquals("t", parameterModels.get(0).getName());
         assertEquals("200", parameterModels.get(0).getValue());
-        assertEquals("-p", parameterModels.get(1).getName());
+        assertEquals("process", parameterModels.get(1).getName());
         assertEquals("300", parameterModels.get(1).getValue());
+    }
+
+    @Test
+    void throwInvalidCommand() {
+        final String[] args = new String[]{
+                "-t", "200", "---process", "300"
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> ParameterParser.parse(args));
     }
 
     @Test
@@ -78,45 +110,45 @@ class ParameterParserTest {
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(3, parameterModels.size());
-        assertEquals("-t", parameterModels.get(0).getName());
+        assertEquals("t", parameterModels.get(0).getName());
         assertEquals("200", parameterModels.get(0).getValue());
-        assertEquals("-p", parameterModels.get(1).getName());
+        assertEquals("p", parameterModels.get(1).getName());
         assertEquals("300", parameterModels.get(1).getValue());
-        assertEquals("-h", parameterModels.get(2).getName());
+        assertEquals("h", parameterModels.get(2).getName());
         assertNull(parameterModels.get(2).getValue());
     }
 
     @Test
     void parseCommandWithThreeValues2() {
         final String[] args = new String[]{
-                "-t", "200", "-h", "-p", "300"
+                "-t", "200", "--help", "-process", "300"
         };
 
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(3, parameterModels.size());
-        assertEquals("-t", parameterModels.get(0).getName());
+        assertEquals("t", parameterModels.get(0).getName());
         assertEquals("200", parameterModels.get(0).getValue());
-        assertEquals("-h", parameterModels.get(1).getName());
+        assertEquals("help", parameterModels.get(1).getName());
         assertNull(parameterModels.get(1).getValue());
-        assertEquals("-p", parameterModels.get(2).getName());
+        assertEquals("process", parameterModels.get(2).getName());
         assertEquals("300", parameterModels.get(2).getValue());
     }
 
     @Test
     void parseCommandWithThreeValues3() {
         final String[] args = new String[]{
-                "-t", "200", "-h", "-p", "300", "abc.yml"
+                "--time", "200", "-h", "-p", "300", "abc.yml"
         };
 
         final List<ParameterModel> parameterModels = ParameterParser.parse(args);
 
         assertEquals(4, parameterModels.size());
-        assertEquals("-t", parameterModels.get(0).getName());
+        assertEquals("time", parameterModels.get(0).getName());
         assertEquals("200", parameterModels.get(0).getValue());
-        assertEquals("-h", parameterModels.get(1).getName());
+        assertEquals("h", parameterModels.get(1).getName());
         assertNull(parameterModels.get(1).getValue());
-        assertEquals("-p", parameterModels.get(2).getName());
+        assertEquals("p", parameterModels.get(2).getName());
         assertEquals("300", parameterModels.get(2).getValue());
         assertNull(parameterModels.get(3).getName());
         assertEquals("abc.yml", parameterModels.get(3).getValue());
