@@ -1,6 +1,7 @@
 package tech.nmhillusion.n2mix.helper.cli;
 
 import tech.nmhillusion.n2mix.model.cli.ParameterModel;
+import tech.nmhillusion.n2mix.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,8 @@ public abstract class ParameterParser {
         int argsLength = args.length;
         for (int argIdx = 0; argIdx < argsLength; ++argIdx) {
             final String arg_ = args[argIdx];
-            final String parameterName = getParameterName(arg_);
+
+            String parameterName = null;
 
             ParameterType currentParameterType = null;
             if (arg_.startsWith("-")) {
@@ -40,14 +42,16 @@ public abstract class ParameterParser {
                 }
 
                 currentParameterType = ParameterType.NAME;
+                parameterName = getParameterName(arg_);
+                removeExistedParameters(parameterModels, parameterName);
             } else {
                 currentParameterType = ParameterType.VALUE;
             }
 
+
             if (null == parameterModel) {
                 parameterModel = new ParameterModel();
             }
-
 
             if (ParameterType.NAME == lastParameterType) {
                 if (ParameterType.VALUE == currentParameterType) {
@@ -87,6 +91,10 @@ public abstract class ParameterParser {
 
 
         return parameterModels;
+    }
+
+    private static void removeExistedParameters(List<ParameterModel> parameterModels, String parameterName) {
+        parameterModels.removeIf(parameterModel -> StringUtil.trimWithNull(parameterName).equals(parameterModel.getName()));
     }
 
     private enum ParameterType {

@@ -153,4 +153,42 @@ class ParameterParserTest {
         assertNull(parameterModels.get(3).getName());
         assertEquals("abc.yml", parameterModels.get(3).getValue());
     }
+
+    @Test
+    void parseCommandWithDuplicateParameters() {
+        final String[] args = new String[]{
+                "--time", "200", "-h", "--time", "300", "-p", "320", "abc.yml"
+        };
+
+        final List<ParameterModel> parameterModels = ParameterParser.parse(args);
+
+        assertEquals(4, parameterModels.size());
+        assertEquals("h", parameterModels.get(0).getName());
+        assertNull(parameterModels.get(0).getValue());
+        assertEquals("time", parameterModels.get(1).getName());
+        assertEquals("300", parameterModels.get(1).getValue());
+        assertEquals("p", parameterModels.get(2).getName());
+        assertEquals("320", parameterModels.get(2).getValue());
+        assertNull(parameterModels.get(3).getName());
+        assertEquals("abc.yml", parameterModels.get(3).getValue());
+    }
+
+    @Test
+    void parseCommandWithDuplicateParameters2() {
+        final String[] args = new String[]{
+                "--time", "200", "-h", "--time", "300", "-p", "320", "abc.yml", "-h"
+        };
+
+        final List<ParameterModel> parameterModels = ParameterParser.parse(args);
+
+        assertEquals(4, parameterModels.size());
+        assertEquals("time", parameterModels.get(0).getName());
+        assertEquals("300", parameterModels.get(0).getValue());
+        assertEquals("p", parameterModels.get(1).getName());
+        assertEquals("320", parameterModels.get(1).getValue());
+        assertNull(parameterModels.get(2).getName());
+        assertEquals("abc.yml", parameterModels.get(2).getValue());
+        assertEquals("h", parameterModels.get(3).getName());
+        assertNull(parameterModels.get(3).getValue());
+    }
 }
