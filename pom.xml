@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>tech.nmhillusion</groupId>
     <artifactId>n2mix</artifactId>
-    <version>1.0.0</version>
+    <version>2024.6.0</version>
     <name>n2mix</name>
     <description>n2mix package</description>
     <properties>
@@ -12,11 +12,11 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <spring.version>6.1.6</spring.version>
+        <spring.version>6.1.8</spring.version>
         <slf4j.version>2.0.12</slf4j.version>
         <pdfbox.version>2.0.30</pdfbox.version>
         <poi.version>5.2.5</poi.version>
-        <hibernate.version>6.5.0.Final</hibernate.version>
+        <hibernate.version>6.5.2.Final</hibernate.version>
 
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
@@ -138,15 +138,8 @@
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
-            <version>9.2.0</version>
+            <version>9.3.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>33.2.0-jre</version>
-        </dependency>
-
 
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
         <dependency>
