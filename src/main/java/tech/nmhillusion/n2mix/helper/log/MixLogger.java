@@ -5,16 +5,20 @@ import org.slf4j.MarkerFactory;
 import tech.nmhillusion.n2mix.type.ChainMap;
 import tech.nmhillusion.n2mix.util.CollectionUtil;
 import tech.nmhillusion.n2mix.util.StringUtil;
+import tech.nmhillusion.n2mix.validator.StringValidator;
 import tech.nmhillusion.pi_logger.PiLogger;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 public class MixLogger {
     private final static Pattern IS_FORMATTED_PATTERN = Pattern.compile("%|(\\$\\w+(\\s|\\b))");
+    private final static Pattern INTERPOLATION_PATTERN = Pattern.compile("\\{(\\d*)}");
     private final Logger logger;
     private final Class<?> mClass;
     private final boolean isPiLogger;
@@ -134,6 +138,30 @@ public class MixLogger {
         }
     }
 
+    private String formatForInterpolation(String format, Object... params) {
+        final List<Object> paramObjects = Arrays.asList(params);
+
+        final AtomicInteger count = new AtomicInteger();
+
+        return INTERPOLATION_PATTERN.matcher(format).replaceAll(match -> {
+            final String matchedIndex = match.group(1);
+
+            final int currentIndex = StringValidator.isBlank(matchedIndex)
+                    ? count.getAndIncrement()
+                    : Integer.parseInt(matchedIndex);
+
+            if (params.length > currentIndex) {
+                return String.valueOf(paramObjects.get(currentIndex));
+            } else {
+                return match.group();
+            }
+        });
+    }
+
+    public void info(String format, Object... params) {
+        logger.info(formatForInterpolation(format, params));
+    }
+
     public void infoFormat(String format_, Object... params) {
         infoDetail(defaultMarker(), format_, params);
     }
@@ -158,6 +186,10 @@ public class MixLogger {
         } else {
             debugFormat(String.valueOf(data), data);
         }
+    }
+
+    public void debug(String format, Object... params) {
+        logger.debug(formatForInterpolation(format, params));
     }
 
     public void debugFormat(String format_, Object... params) {
@@ -186,6 +218,10 @@ public class MixLogger {
         }
     }
 
+    public void warn(String format, Object... params) {
+        logger.warn(formatForInterpolation(format, params));
+    }
+
     public void warnFormat(String format_, Object... params) {
         warnDetail(defaultMarker(), format_, params);
     }
@@ -212,6 +248,10 @@ public class MixLogger {
         }
     }
 
+    public void trace(String format, Object... params) {
+        logger.trace(formatForInterpolation(format, params));
+    }
+
     public void traceFormat(String format_, Object... params) {
         traceDetail(defaultMarker(), format_, params);
     }
@@ -236,6 +276,10 @@ public class MixLogger {
         } else {
             errorFormat(String.valueOf(data), data);
         }
+    }
+
+    public void error(String format, Object... params) {
+        logger.error(formatForInterpolation(format, params));
     }
 
     public void errorFormat(String format_, Object... params) {
