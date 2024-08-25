@@ -23,6 +23,7 @@ public abstract class DatabaseTestHelper {
 //            });
 
         return System.getenv("GITHUB_RUN_ID");
+//        return "SKIP_TEST";
     }
 
     public static <T> T getDatabaseConfig(String configKey, Class<T> class2Cast) throws IOException {
