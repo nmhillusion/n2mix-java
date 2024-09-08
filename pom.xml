@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>tech.nmhillusion</groupId>
     <artifactId>n2mix</artifactId>
-    <version>2024.6.0</version>
+    <version>2024.9.0</version>
     <name>n2mix</name>
     <description>n2mix package</description>
     <properties>
