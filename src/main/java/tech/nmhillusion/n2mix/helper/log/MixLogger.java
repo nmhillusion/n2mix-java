@@ -65,17 +65,16 @@ public class MixLogger {
         return getTemplateLog(true, data);
     }
 
-    private String getTemplateLog(boolean prefillPlaceholder, Object data) {
-        StackTraceElement trace = findTrace();
+    private String getTemplateLog(boolean prefillPlaceholderForLogMessage, Object data) {
         String optionalData = "";
 
-        if (prefillPlaceholder) {
+        if (prefillPlaceholderForLogMessage) {
             optionalData = "\t{}\n";
         }
         if (data instanceof Throwable) {
             optionalData = "";
         }
-        return null != trace ? trace.getMethodName() + "():" + trace.getLineNumber() + " " + optionalData : "<not_method>" + optionalData;
+        return wrapperLogMessageWithTrace(optionalData);
     }
 
     private String defaultMarker() {
@@ -143,7 +142,7 @@ public class MixLogger {
 
         final AtomicInteger count = new AtomicInteger();
 
-        return INTERPOLATION_PATTERN.matcher(format).replaceAll(match -> {
+        final String interpolationText = INTERPOLATION_PATTERN.matcher(format).replaceAll(match -> {
             final String matchedIndex = match.group(1);
 
             final int currentIndex = StringValidator.isBlank(matchedIndex)
@@ -156,6 +155,13 @@ public class MixLogger {
                 return match.group();
             }
         });
+
+        return wrapperLogMessageWithTrace(interpolationText);
+    }
+
+    private String wrapperLogMessageWithTrace(String message) {
+        final StackTraceElement trace = findTrace();
+        return null != trace ? trace.getMethodName() + "():" + trace.getLineNumber() + " " + message : "<not_method>" + message;
     }
 
     public void info(String format, Object... params) {

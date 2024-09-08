@@ -3,7 +3,6 @@ package tech.nmhillusion.n2mix.helper.log;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.pi_logger.constant.LogLevel;
-import tech.nmhillusion.pi_logger.model.LogConfigModel;
 
 import java.sql.SQLException;
 
@@ -13,7 +12,7 @@ class LogHelperTest {
 
     @BeforeAll
     static void setupLogger() {
-        final LogConfigModel updatedConfig = LogHelper.getDefaultPiLoggerConfig()
+        final tech.nmhillusion.pi_logger.model.LogConfigModel updatedConfig = LogHelper.getDefaultPiLoggerConfig()
                 .setLogLevel(LogLevel.TRACE);
         LogHelper.setDefaultPiLoggerConfig(
                 updatedConfig
