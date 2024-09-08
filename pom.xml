@@ -40,6 +40,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure -->
@@ -56,6 +57,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
@@ -63,6 +65,7 @@
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
@@ -70,6 +73,7 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>5.1.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
@@ -77,6 +81,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-orm -->
@@ -84,6 +89,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-jcache -->
@@ -91,6 +97,7 @@
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-jcache</artifactId>
             <version>${hibernate.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.ehcache/ehcache -->
@@ -98,6 +105,7 @@
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>3.10.8</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.glassfish.jaxb</groupId>
@@ -119,7 +127,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.2</version>
+            <version>2.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -148,6 +156,7 @@
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>9.3.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
@@ -184,7 +193,7 @@
         <dependency>
             <groupId>com.github.nmhillusion</groupId>
             <artifactId>pi-logger</artifactId>
-            <version>2024.2.26</version>
+            <version>2024.9.8</version>
         </dependency>
 
         <!-- Mark: TESTING -->
