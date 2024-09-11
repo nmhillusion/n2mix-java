@@ -2,10 +2,7 @@ package tech.nmhillusion.n2mix.type;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
@@ -28,10 +25,21 @@ public class Stringeable implements Serializable {
 
         final Field[] declaredFields = getClass().getDeclaredFields();
 
-        final List<Field> fieldList = Stream.of(
-                        declaredFields
-                )
-                .toList();
+        final List<Field> fieldList = new ArrayList<>(Arrays.asList(declaredFields));
+
+        Class<?> superClass = getClass().getSuperclass();
+        while (!superClass.equals(Object.class)) {
+            if (!superClass.equals(Stringeable.class)) {
+                fieldList.addAll(
+                        Stream.of(
+                                        superClass.getDeclaredFields()
+                                )
+                                .toList()
+                );
+            }
+
+            superClass = superClass.getSuperclass();
+        }
 
         CACHED__CLASS_FIELDS.put(getClass().getName(), fieldList);
 

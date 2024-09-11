@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.model.Book;
 import tech.nmhillusion.n2mix.model.StaffEntity;
+import tech.nmhillusion.n2mix.model.StoryBook;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -88,6 +89,20 @@ class StringeableTest {
             for (int threadIdx = 0; threadIdx < MAX_THREADS; ++threadIdx) {
                 executorService.submit(this::logForRecursiveInstances);
             }
+        });
+    }
+
+    @Test
+    void testWithHierarchyClass() {
+        Assertions.assertDoesNotThrow(() -> {
+            final StoryBook storyBook = new StoryBook();
+            storyBook
+                    .setChapterNo("1.1")
+                    .setAuthor("Ahraham")
+                    .setPrice(105)
+                    .setTitle("The way of the monk");
+
+            getLogger(this).info("toString of the book: " + storyBook);
         });
     }
 }
