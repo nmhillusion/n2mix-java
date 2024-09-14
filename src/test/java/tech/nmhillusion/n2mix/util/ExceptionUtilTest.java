@@ -3,10 +3,11 @@ package tech.nmhillusion.n2mix.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.exception.AppRuntimeException;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
+
+import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
  * created by: nmhillusion
@@ -42,10 +43,28 @@ class ExceptionUtilTest {
         } catch (Throwable ex) {
             Assertions.assertDoesNotThrow(() -> {
                 final String stackTraceContent = ExceptionUtil.convertThrowableToString(ex);
-                LogHelper.getLogger(this).error("Error Stacktrace: " + stackTraceContent);
+                getLogger(this).error("Error Stacktrace: " + stackTraceContent);
                 Assertions.assertNotNull(stackTraceContent);
                 Assertions.assertFalse(stackTraceContent.isEmpty());
             });
+        }
+    }
+
+    @Test
+    void testSqlExceptionWithStacktrace() {
+        final String sqlErrorMessage = "Cannot find program unit amk.pkg_app_base.f_get_name";
+        try {
+            throw new AppRuntimeException(
+                    new SQLException("ORA-01722: " + sqlErrorMessage)
+            );
+        } catch (Throwable ex) {
+            final AppRuntimeException sqlException = ExceptionUtil.throwParsedSqlException(ex);
+            Assertions.assertNotNull(sqlException);
+            Assertions.assertTrue(
+                    sqlException.getMessage()
+                            .contains(sqlErrorMessage)
+            );
+            getLogger(this).error(ex);
         }
     }
 }
