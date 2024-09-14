@@ -34,13 +34,13 @@ class ExcelReaderTest {
             Assertions.assertEquals(4, readData.get(0).getRows().size());
             Assertions.assertEquals("Sheet1", readData.get(0).getSheetName());
             Assertions.assertEquals(
-                    List.of("ID", "First Name", "Last Name", "Full Name", "Gender"),
+                    List.of("ID", "First Name", "Last Name", "Full Name", "Gender", "Achieved"),
                     readData.get(0).getRows().get(0).getCells()
                             .stream().map(CellData::getRawData)
                             .toList()
             );
             Assertions.assertEquals(
-                    List.of(1d, "Thanh", "Trần Văn", "Trần Văn Thanh", "M"),
+                    List.of(1d, "Thanh", "Trần Văn", "Trần Văn Thanh", "M", "Dr"),
                     readData.get(0).getRows().get(1).getCells()
                             .stream().map(CellData::getRawData)
                             .toList()
@@ -52,15 +52,15 @@ class ExcelReaderTest {
                             .toList()
             );
             Assertions.assertEquals(
-                    List.of(3d, "Minh", "Thái Thị Tuyết", "Thái Thị Tuyết Minh", "F"),
+                    List.of(3d, "Minh", "Thái Thị Tuyết", "Thái Thị Tuyết Minh", "F", "Bachelor"),
                     readData.get(0).getRows().get(3).getCells()
                             .stream().map(CellData::getRawData)
                             .toList()
             );
 
             Assertions.assertEquals(
-                    List.of(String.valueOf(3d), "Minh", "Thái Thị Tuyết", "Thái Thị Tuyết Minh", "F"),
-                    readData.get(0).getRows().get(3).getCells()
+                    List.of("2.0", "Tuấn", "Kiều Nhật", "Kiều Nhật Tuấn", "M"),
+                    readData.get(0).getRows().get(2).getCells()
                             .stream().map(CellData::getStringValue)
                             .toList()
             );
