@@ -77,11 +77,11 @@ public abstract class ExcelReader {
         Object rawValue = null;
 
         switch (cellType) {
-            case BLANK, ERROR -> rawValue = "";
             case BOOLEAN -> rawValue = cell_.getBooleanCellValue();
             case FORMULA -> rawValue = cell_.getRichStringCellValue().getString();
             case STRING -> rawValue = cell_.getStringCellValue();
             case NUMERIC -> rawValue = cell_.getNumericCellValue();
+            default -> rawValue = "";
         }
 
         return new CellData()
