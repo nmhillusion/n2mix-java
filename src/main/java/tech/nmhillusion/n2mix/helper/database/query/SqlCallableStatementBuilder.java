@@ -12,6 +12,7 @@ import tech.nmhillusion.n2mix.validator.StringValidator;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
@@ -136,6 +137,14 @@ public class SqlCallableStatementBuilder {
         }
     }
 
+    public String toString() {
+        return buildQueryBuilder(
+                !StringValidator.isBlank(functionName)
+                        ? functionName
+                        : procedureName
+        );
+    }
+
     private String buildQueryBuilder(@NonNull String callName) {
         final List<String> argsStatements = new ArrayList<>();
         for (DbInputModel dbInputModel : dbInputModels) {
@@ -151,16 +160,27 @@ public class SqlCallableStatementBuilder {
 
         {/// Mark: LOG QUERY
             try {
-                String infoQuery = finalQuery;
-                for (DbInputModel dbInputModel : dbInputModels) {
-                    final String printValue = String.class.isAssignableFrom(dbInputModel.getInputType())
-                            ? "'" + dbInputModel.getInputValue() + "'"
-                            : dbInputModel.getInputValue();
+                String infoQuery = "$callName($argumentList)"
+                        .replace("$callName", callName)
+                        .replace("$argumentList",
+                                dbInputModels
+                                        .stream()
+                                        .map((k) -> {
+                                            String argv = "<Cannot obtain value of param>";
+                                            try {
+                                                final String rawInputValue = String.valueOf(k.getInputValue());
+                                                argv = String.class.isAssignableFrom(k.getInputType())
+                                                        ? "'%s'".formatted(rawInputValue.replace("'", "''"))
+                                                        : rawInputValue;
+                                            } catch (SQLException ex) {
+                                                argv = "<Cannot obtain value of param: %s>"
+                                                        .formatted(ex.getMessage());
+                                            }
+                                            return k.getInputName() + " => " + argv;
+                                        })
+                                        .collect(Collectors.joining(","))
 
-                    infoQuery = infoQuery
-                            .replaceFirst(":" + dbInputModel.getInputName() + "[,)]", printValue + ",");
-                }
-                infoQuery = infoQuery.replaceFirst(",$", ")");
+                        );
 
                 getLogger(this).info(infoQuery);
             } catch (Throwable ex) {

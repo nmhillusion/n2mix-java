@@ -1,5 +1,6 @@
 package tech.nmhillusion.n2mix.helper.database;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,7 +10,6 @@ import tech.nmhillusion.n2mix.helper.database.query.SqlCallableStatementBuilder;
 import tech.nmhillusion.n2mix.helper.database.query.StatementExecutor;
 import tech.nmhillusion.n2mix.helper.database.result.ResultSetObjectBuilder;
 import tech.nmhillusion.n2mix.helper.database.result.WorkingResultSetHelper;
-import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.DocumentEntity;
 import tech.nmhillusion.n2mix.type.Pair;
 import tech.nmhillusion.n2mix.validator.StringValidator;
@@ -105,7 +105,7 @@ public class SqlCallableStatementBuilderTest {
                     getLogger(this).info("created doc id = " + createdId);
                     var createdDocument = getDocumentById(statementExecutor, String.valueOf(createdId));
 
-                    LogHelper.getLogger(this).info("created document = " + createdDocument);
+                    getLogger(this).info("created document = " + createdDocument);
 
                     deleteDocument(statementExecutor, String.valueOf(createdId));
                 });
@@ -128,6 +128,29 @@ public class SqlCallableStatementBuilderTest {
                 Assertions.assertNotNull(result);
                 getLogger(this).info("load data for document: %s".formatted(result));
             }
+        });
+    }
+
+    @Test
+    void testSqlBuilderToString() {
+        Assertions.assertDoesNotThrow(() -> {
+            final StatementExecutor statementExecutor = new StatementExecutor(null, (Session) null);
+            final String sqlBuilderString = new SqlCallableStatementBuilder(statementExecutor)
+                    .setProcedureName("amp.pkg_business_execution.p_log__info")
+                    .addArgument("i_task_id", "52709")
+                    .addArgument("i_is_warning", false)
+                    .addArgument("i_log_score", 8.9f)
+                    .addArgument("i_log_content", "copyLoosePrintDocumentsToFolder() = [PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$")
+                    .toString();
+
+            getLogger(this).info("sqlBuilderString = " + sqlBuilderString);
+
+            Assertions.assertFalse(StringValidator.isBlank(sqlBuilderString));
+            Assertions.assertTrue(sqlBuilderString.contains("i_task_id"));
+            Assertions.assertTrue(sqlBuilderString.contains("i_is_warning"));
+            Assertions.assertTrue(sqlBuilderString.contains("i_log_score"));
+            Assertions.assertTrue(sqlBuilderString.contains("i_log_content"));
+
         });
     }
 }
