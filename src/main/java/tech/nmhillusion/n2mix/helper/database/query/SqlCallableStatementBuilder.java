@@ -158,31 +158,30 @@ public class SqlCallableStatementBuilder {
                 .replace("$callName", callName)
                 .replace("$argumentList", String.join(",", argsStatements));
 
-        {/// Mark: LOG QUERY
+        {//-- Mark: LOG QUERY
             try {
-                String infoQuery = "$callName($argumentList)"
-                        .replace("$callName", callName)
-                        .replace("$argumentList",
-                                dbInputModels
-                                        .stream()
-                                        .map((k) -> {
-                                            String argv = "<Cannot obtain value of param>";
-                                            try {
-                                                final String rawInputValue = String.valueOf(k.getInputValue());
-                                                argv = String.class.isAssignableFrom(k.getInputType())
-                                                        ? "'%s'".formatted(rawInputValue.replace("'", "''"))
-                                                        : rawInputValue;
-                                            } catch (SQLException ex) {
-                                                argv = "<Cannot obtain value of param: %s>"
-                                                        .formatted(ex.getMessage());
-                                            }
-                                            return k.getInputName() + " => " + argv;
-                                        })
-                                        .collect(Collectors.joining(","))
+                final String argumentListValue_ = dbInputModels
+                        .stream()
+                        .map((k) -> {
+                            String argv = "<Cannot obtain value of param>";
+                            try {
+                                final String rawInputValue = String.valueOf(k.getInputValue());
+                                argv = String.class.isAssignableFrom(k.getInputType())
+                                        ? "'%s'".formatted(rawInputValue.replace("'", "''"))
+                                        : rawInputValue;
+                            } catch (SQLException ex) {
+                                argv = "<Cannot obtain value of param: %s>"
+                                        .formatted(ex.getMessage());
+                            }
+                            return k.getInputName() + " => " + argv;
+                        })
+                        .collect(Collectors.joining(","));
 
-                        );
-
-                getLogger(this).info(infoQuery);
+                getLogger(this).info(
+                        "$callName($argumentList)"
+                                .replace("$callName", callName)
+                                .replace("$argumentList", argumentListValue_)
+                );
             } catch (Throwable ex) {
                 getLogger(this).error(ex);
             }

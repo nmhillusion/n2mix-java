@@ -1,24 +1,22 @@
 package tech.nmhillusion.n2mix.util;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import tech.nmhillusion.n2mix.constant.ContentType;
 import tech.nmhillusion.n2mix.exception.ApiResponseException;
 import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.model.ApiErrorResponse;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidNoInputFunction;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
-import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 public abstract class ResponseEntityUtil {
     private static int isWriteResponse = -1;
     private static int maxResponseLog = 0;
 
     private static <T> void writeLogResponse(T body) {
-        /// Mark: WRITE LOG
+        //-- Mark: WRITE LOG
         if (-1 == isWriteResponse) {
             try {
                 final String writeResponse = "true";
@@ -46,7 +44,7 @@ public abstract class ResponseEntityUtil {
     public static <T> ResponseEntity<T> make(T body) {
         writeLogResponse(body);
 
-        /// Mark: RETURN RESPONSE
+        //-- Mark: RETURN RESPONSE
         if (null == body) {
             return ResponseEntity.notFound().build();
         } else {
@@ -61,7 +59,7 @@ public abstract class ResponseEntityUtil {
             LogHelper.getLogger(ResponseEntityUtil.class).error(ex);
             throw new ApiResponseException(ex);
         }
-        /// Mark: RETURN RESPONSE
+        //-- Mark: RETURN RESPONSE
         return ResponseEntity.noContent().build();
     }
 

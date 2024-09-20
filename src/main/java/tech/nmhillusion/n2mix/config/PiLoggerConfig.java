@@ -57,7 +57,7 @@ public class PiLoggerConfig {
         }
 
         {
-            /// Mark: Set for file output
+            //-- Mark: Set for file output
             final String outputFilePath = SelectUtil.getFirstValueNotNullArgv(loggingFileName, loggingFilePath);
 
             piLoggerConfig

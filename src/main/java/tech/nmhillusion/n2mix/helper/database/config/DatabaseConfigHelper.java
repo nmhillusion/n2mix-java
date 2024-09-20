@@ -103,24 +103,24 @@ public class DatabaseConfigHelper {
     private Map<String, String> getHibernateProperties(DataSourceProperties dataSourceProperties) {
         final Map<String, String> jpaProperties = new HashMap<>();
 
-        /// Mark: Basic
+        //-- Mark: Basic
         jpaProperties.put("hibernate.connection.pool_size", String.valueOf(POOL_SIZE));
         jpaProperties.put("hibernate.connection.autocommit", dataSourceProperties.getConnection().getAutocommit());
 
-        /// Mark: Connection
+        //-- Mark: Connection
         jpaProperties.put("hibernate.dialect", dataSourceProperties.getDialectClass());
         jpaProperties.put("hibernate.transaction.coordinator_class", dataSourceProperties.getCoordinatorClass());
         jpaProperties.put("hibernate.transaction.auto_close_session", dataSourceProperties.getAutoCloseSession());
         jpaProperties.put("hibernate.hbm2ddl.auto", dataSourceProperties.getHbm2ddlAuto());
         jpaProperties.put("hibernate.current_session_context_class", dataSourceProperties.getCurrentSessionContextClass());
 
-        /// Mark: Show SQL
+        //-- Mark: Show SQL
         jpaProperties.put("hibernate.format_sql", dataSourceProperties.getShowSql());
         jpaProperties.put("hibernate.show_sql", dataSourceProperties.getShowSql());
         jpaProperties.put("hibernate.use_sql_comments", dataSourceProperties.getShowSql());
         jpaProperties.put("hibernate.generate_statistics", dataSourceProperties.getGenerateStatistics());
 
-        /// Mark: Cache
+        //-- Mark: Cache
         jpaProperties.put("hibernate.cache.use_minimal_puts", dataSourceProperties.getCached().getEnabled());
         jpaProperties.put("hibernate.cache.use_query_cache", dataSourceProperties.getCached().getEnabled());
         jpaProperties.put("hibernate.cache.use_second_level_cache", dataSourceProperties.getCached().getEnabled());

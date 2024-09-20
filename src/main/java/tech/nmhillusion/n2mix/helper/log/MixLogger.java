@@ -89,7 +89,7 @@ public class MixLogger {
         if (foundFormattedPattern) {
             String formattedData = "";
 
-            /// Mark: Format with %
+            //-- Mark: Format with %
             String textPattern = String.valueOf(formatData);
             /// TODO: 2022-11-27 check for log string with very big log text 
             textPattern = textPattern.replaceAll("%([^abcdefghnostx]+)", "%%$1");
@@ -106,7 +106,7 @@ public class MixLogger {
                 formattedData = String.valueOf(formatData);
             }
 
-            /// Mark: Format with $
+            //-- Mark: Format with $
             if (!CollectionUtil.isNullOrEmptyArgv(params)) {
                 if (params[0] instanceof final ChainMap<?, ?> paramsChainMap) {
                     for (Object key : paramsChainMap.keySet()) {

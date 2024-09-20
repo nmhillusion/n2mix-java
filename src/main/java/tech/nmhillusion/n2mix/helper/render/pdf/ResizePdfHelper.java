@@ -45,7 +45,7 @@ public class ResizePdfHelper {
                 final PDRectangle currentMediaBox = page_.getMediaBox();
                 final float scaleFactor_ = calculateScaleFactor(currentMediaBox);
 
-                /// Mark: for scaling
+                //-- Mark: for scaling
                 try (final PDPageContentStream pdPageContentStream = new PDPageContentStream(
                         pdDocumentSrc
                         , page_
@@ -65,7 +65,7 @@ public class ResizePdfHelper {
 
                 page_.setMediaBox(newMediaBox_);
 
-                /// Mark: for out content
+                //-- Mark: for out content
                 final PDPage outPage = pdDocumentOut.importPage(page_);
                 outPage.setResources(page_.getResources());
                 outPage.setMetadata(page_.getMetadata());
