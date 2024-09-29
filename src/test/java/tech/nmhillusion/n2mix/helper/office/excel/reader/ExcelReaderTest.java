@@ -31,7 +31,7 @@ class ExcelReaderTest {
 
             Assertions.assertFalse(readData.isEmpty());
             Assertions.assertEquals(1, readData.size());
-            Assertions.assertEquals(4, readData.get(0).getRows().size());
+            Assertions.assertEquals(5, readData.get(0).getRows().size());
             Assertions.assertEquals("Sheet1", readData.get(0).getSheetName());
             Assertions.assertEquals(
                     List.of("ID", "First Name", "Last Name", "Full Name", "Gender", "Achieved"),
@@ -62,6 +62,13 @@ class ExcelReaderTest {
                     List.of("2.0", "Tuấn", "Kiều Nhật", "Kiều Nhật Tuấn", "M"),
                     readData.get(0).getRows().get(2).getCells()
                             .stream().map(CellData::getStringValue)
+                            .toList()
+            );
+
+            Assertions.assertEquals(
+                    List.of(4d, "", "", "Thái Minh", "", "General"),
+                    readData.get(0).getRows().get(4).getCells()
+                            .stream().map(CellData::getRawData)
                             .toList()
             );
         }

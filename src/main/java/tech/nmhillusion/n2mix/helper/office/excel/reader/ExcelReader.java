@@ -5,6 +5,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import tech.nmhillusion.n2mix.helper.office.excel.reader.model.CellData;
 import tech.nmhillusion.n2mix.helper.office.excel.reader.model.RowData;
 import tech.nmhillusion.n2mix.helper.office.excel.reader.model.SheetData;
+import tech.nmhillusion.n2mix.util.StringUtil;
+import tech.nmhillusion.n2mix.validator.StringValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,12 +47,30 @@ public abstract class ExcelReader {
                     .forEach(rowDataList::add);
         }
 
+        {
+            //-- Mark: remove empty last row
+            final int lastIdx = rowDataList.size() - 1;
+
+            if (
+                    rowDataList.get(lastIdx).getCells().stream().allMatch(it -> StringValidator.isBlank(
+                            StringUtil.trimWithNull(it.getRawData())
+                    ))
+            ) {
+                rowDataList.remove(lastIdx);
+            }
+        }
+
         return sheetData
                 .setSheetName(sheet_.getSheetName())
                 .setRows(rowDataList);
     }
 
     private static RowData readRowContent(Row row_) {
+        if (null == row_) {
+            return new RowData()
+                    .setCells(new ArrayList<>());
+        }
+
         final RowData rowData_ = new RowData();
         final List<CellData> cellDataList = new ArrayList<>();
 
@@ -73,6 +93,12 @@ public abstract class ExcelReader {
     }
 
     private static CellData readCellContent(Cell cell_) {
+        if (null == cell_) {
+            return new CellData()
+                    .setCellType(CellType.BLANK)
+                    .setRawData("");
+        }
+
         final CellType cellType = cell_.getCellType();
         Object rawValue = null;
 
