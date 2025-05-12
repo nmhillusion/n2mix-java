@@ -12,11 +12,11 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <spring.version>6.1.12</spring.version>
-        <slf4j.version>2.0.12</slf4j.version>
+        <spring.version>6.2.6</spring.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <pdfbox.version>2.0.30</pdfbox.version>
-        <poi.version>5.3.0</poi.version>
-        <hibernate.version>6.6.1.Final</hibernate.version>
+        <poi.version>5.4.1</poi.version>
+        <hibernate.version>6.6.14.Final</hibernate.version>
 
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>3.3.3</version>
+            <version>3.4.5</version>
             <scope>provided</scope>
         </dependency>
 
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.3</version>
+            <version>2.4</version>
             <scope>provided</scope>
         </dependency>
 
@@ -135,7 +135,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.17.2</version>
+            <version>2.19.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20240303</version>
+            <version>20250107</version>
             <scope>provided</scope>
         </dependency>
 
@@ -159,7 +159,7 @@
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
-            <version>9.3.0</version>
+            <version>9.4.3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -192,6 +192,7 @@
             <version>${pdfbox.version}</version>
             <scope>provided</scope>
         </dependency>
+
 
         <dependency>
             <groupId>org.slf4j</groupId>
