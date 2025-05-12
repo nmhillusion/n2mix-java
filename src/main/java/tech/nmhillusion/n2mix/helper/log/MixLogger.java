@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MixLogger {
@@ -150,9 +151,10 @@ public class MixLogger {
                     : Integer.parseInt(matchedIndex);
 
             if (params.length > currentIndex) {
-                return String.valueOf(paramObjects.get(currentIndex));
+                final String currObj = String.valueOf(paramObjects.get(currentIndex));
+                return Matcher.quoteReplacement(currObj);
             } else {
-                return match.group();
+                return Matcher.quoteReplacement(match.group());
             }
         });
 
