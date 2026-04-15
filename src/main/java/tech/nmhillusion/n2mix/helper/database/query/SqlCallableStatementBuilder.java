@@ -192,6 +192,10 @@ public class SqlCallableStatementBuilder {
 
     @Deprecated
     public CallableStatement build() throws SQLException {
+        if (null == connectionWrapper) {
+            throw new IllegalArgumentException("Fail when not exist connectionWrapper");
+        }
+
         if (!StringValidator.isBlank(functionName)) {
             if (returnTypeOpt.isEmpty()) {
                 throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
