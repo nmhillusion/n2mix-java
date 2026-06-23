@@ -1,9 +1,11 @@
 package tech.nmhillusion.n2mix.helper.log;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.pi_logger.constant.LogLevel;
+import tech.nmhillusion.pi_logger.factory.PiLoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +22,17 @@ public class ThreadLogTest {
 
     @BeforeAll
     static void setupLogger() {
-        final tech.nmhillusion.pi_logger.model.LogConfigModel updatedConfig = LogHelper.getDefaultPiLoggerConfig()
+        PiLoggerFactory.getDefaultLogConfig()
                 .setLogLevel(LogLevel.TRACE)
-                .setTimestampPattern("yyyy/MMM/dd EEE HH:mm:ss.SSS");
-        LogHelper.setDefaultPiLoggerConfig(
-                updatedConfig
-        )
+                .setTimestampPattern("yyyy/MMM/dd EEE HH:mm:ss.SSS")
+                .setDisplayLineNumber(false)
         ;
     }
 
+    @AfterEach
+    void flush() {
+        getLogger(this).flush();
+    }
 
     @Test
     void testOnAnotherThread() {

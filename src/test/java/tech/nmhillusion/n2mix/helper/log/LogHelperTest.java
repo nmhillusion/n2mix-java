@@ -15,12 +15,9 @@ class LogHelperTest {
 
     @BeforeAll
     static void setupLogger() {
-        final tech.nmhillusion.pi_logger.model.LogConfigModel updatedConfig = LogHelper.getDefaultPiLoggerConfig()
-                .setLogLevel(LogLevel.TRACE);
-        LogHelper.setDefaultPiLoggerConfig(
-                updatedConfig
-        )
-        ;
+        LogHelper.getDefaultPiLoggerConfig()
+                .setLogLevel(LogLevel.TRACE)
+                .setDisplayLineNumber(false);
     }
 
     void throwExceptionFunc() throws SQLException {

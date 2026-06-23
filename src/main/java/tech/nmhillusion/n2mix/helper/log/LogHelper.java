@@ -8,8 +8,10 @@ import tech.nmhillusion.pi_logger.constant.LogLevel;
 import tech.nmhillusion.pi_logger.factory.PiLoggerFactory;
 import tech.nmhillusion.pi_logger.model.LogConfigModel;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Future;
 
 public class LogHelper {
     private static final LogHelper instance = new LogHelper();
@@ -19,8 +21,7 @@ public class LogHelper {
             .setColoring(true)
             .setLogLevel(LogLevel.DEBUG)
             .setIsOutputToFile(false)
-            .setTimestampPattern("yyyy-MM-dd HH:mm:ss")
-            .clone();
+            .setTimestampPattern("yyyy-MM-dd HH:mm:ss");
 
     public static LogConfigModel getDefaultPiLoggerConfig() {
         return instance.piLogConfigModel;
@@ -74,6 +75,19 @@ public class LogHelper {
             return instance.logFactory.get(logName);
         } else {
             return generateLogger(object_, usePiLogger);
+        }
+    }
+
+    public List<Future<Void>> flush() {
+        return logFactory.values()
+                .stream()
+                .map(MixLogger::flush)
+                .toList();
+    }
+
+    public void forceFlush() {
+        for (MixLogger mixLogger : logFactory.values()) {
+            mixLogger.forceFlush();
         }
     }
 }

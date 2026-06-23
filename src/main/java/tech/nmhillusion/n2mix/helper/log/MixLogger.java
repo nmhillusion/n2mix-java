@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -301,6 +303,19 @@ public class MixLogger {
             } else {
                 logger.error(MarkerFactory.getMarker(marker), getTemplateLog(false, format_), doFormattedString(format_, params));
             }
+        }
+    }
+
+    public Future<Void> flush() {
+        if (isPiLogger) {
+            return ((PiLogger) logger).flush();
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    public void forceFlush() {
+        if (isPiLogger) {
+            ((PiLogger) logger).forceFlush();
         }
     }
 }
