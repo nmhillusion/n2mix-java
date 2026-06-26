@@ -10,21 +10,20 @@ import tech.nmhillusion.pi_logger.model.LogConfigModel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 public class LogHelper {
-    private static final LogHelper instance = new LogHelper();
-    private static boolean usePiLogger = true;
-    private final Map<String, MixLogger> logFactory = new TreeMap<>();
-    private final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
+    private static final Map<String, MixLogger> logFactory = new ConcurrentHashMap<>();
+    private static final LogConfigModel piLogConfigModel = PiLoggerFactory.getDefaultLogConfig()
             .setColoring(true)
             .setLogLevel(LogLevel.DEBUG)
             .setIsOutputToFile(false)
             .setTimestampPattern("yyyy-MM-dd HH:mm:ss");
+    private static boolean usePiLogger = true;
 
     public static LogConfigModel getDefaultPiLoggerConfig() {
-        return instance.piLogConfigModel;
+        return piLogConfigModel;
     }
 
     public static void setDefaultPiLoggerConfig(LogConfigModel logConfig) {
@@ -40,7 +39,7 @@ public class LogHelper {
 
     public static void setUsePiLogger(boolean usePiLogger) {
         LogHelper.usePiLogger = usePiLogger;
-        instance.logFactory.clear();
+        logFactory.clear();
     }
 
     private static PiLogger defaultLogger(Object object_) {
@@ -61,7 +60,7 @@ public class LogHelper {
         }
 
         final MixLogger mixLogger = new MixLogger(logger_, loggerClass);
-        instance.logFactory.put(object_.getClass().getName(), mixLogger);
+        logFactory.put(object_.getClass().getName(), mixLogger);
         return mixLogger;
     }
 
@@ -71,21 +70,21 @@ public class LogHelper {
 
     public static MixLogger getLogger(Object object_, boolean usePiLogger) {
         String logName = object_ instanceof Class ? ((Class<?>) object_).getName() : object_.getClass().getName();
-        if (instance.logFactory.containsKey(logName)) {
-            return instance.logFactory.get(logName);
+        if (logFactory.containsKey(logName)) {
+            return logFactory.get(logName);
         } else {
             return generateLogger(object_, usePiLogger);
         }
     }
 
-    public List<Future<Void>> flush() {
+    public static List<Future<Void>> flush() {
         return logFactory.values()
                 .stream()
                 .map(MixLogger::flush)
                 .toList();
     }
 
-    public void forceFlush() {
+    public static void forceFlush() {
         for (MixLogger mixLogger : logFactory.values()) {
             mixLogger.forceFlush();
         }
