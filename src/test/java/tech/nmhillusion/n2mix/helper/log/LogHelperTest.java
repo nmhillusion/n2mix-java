@@ -1,5 +1,6 @@
 package tech.nmhillusion.n2mix.helper.log;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.type.ChainList;
@@ -19,6 +20,12 @@ class LogHelperTest {
                 .setLogLevel(LogLevel.TRACE)
                 .setDisplayLineNumber(false);
     }
+
+    @AfterAll
+    static void flush() {
+        LogHelper.forceFlush();
+    }
+
 
     void throwExceptionFunc() throws SQLException {
         throw new SQLException("Invalid column name.");
