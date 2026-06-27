@@ -49,7 +49,7 @@ public class LogHelper {
     private static MixLogger generateLogger(Object object_, boolean usePiLogger) {
         final Class<?> loggerClass = object_ instanceof Class ? (Class<?>) object_ : object_.getClass();
 
-        Logger logger_ = defaultLogger(object_);
+        Logger logger_;
 
         if (!usePiLogger) {
             logger_ = LoggerFactory.getLogger(loggerClass);
@@ -57,6 +57,8 @@ public class LogHelper {
             if (logger_ instanceof NOPLogger) {
                 logger_ = defaultLogger(object_);
             }
+        } else {
+            logger_ = defaultLogger(object_);
         }
 
         final MixLogger mixLogger = new MixLogger(logger_, loggerClass);
