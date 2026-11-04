@@ -6,7 +6,18 @@ import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
- * date: 2023-06-03
+ * Base class of the database executors.
+ *
+ * <p><b>Transaction contract.</b> One {@code doWork} / {@code doReturningWork} call is one unit of
+ * work: the executor begins a transaction, commits when the callback completes normally, and rolls
+ * back when the callback throws. A rollback failure is attached to the original throwable as a
+ * suppressed exception instead of replacing it.</p>
+ *
+ * <p>A call does not join an ambient Hibernate transaction. The JDBC implementation joins a Spring
+ * transaction bound to the same {@code DataSource} (propagation {@code REQUIRED}), because its
+ * transaction is created through Spring's {@code TransactionTemplate}.</p>
+ *
+ * <p>date: 2023-06-03
  * <p>
  * created-by: nmhillusion
  */

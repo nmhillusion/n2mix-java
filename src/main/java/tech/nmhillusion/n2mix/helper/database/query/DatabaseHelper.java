@@ -3,7 +3,6 @@ package tech.nmhillusion.n2mix.helper.database.query;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.hibernate.SessionFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import tech.nmhillusion.n2mix.exception.InvalidArgument;
 import tech.nmhillusion.n2mix.helper.database.query.executor.HibernateSessionDatabaseExecutor;
@@ -86,9 +85,9 @@ public class DatabaseHelper {
             if (null == sessionFactory) {
                 throw new IllegalArgumentException("SessionFactory must not be null when using " + classOfExecutor.getName());
             }
-            return new HibernateSessionDatabaseExecutor(sessionFactory, _dataSource);
+            return new HibernateSessionDatabaseExecutor(sessionFactory);
         } else if (JdbcTemplateDatabaseExecutor.class.isAssignableFrom(classOfExecutor)) {
-            return new JdbcTemplateDatabaseExecutor(_dataSource, new JdbcTemplate(_dataSource));
+            return new JdbcTemplateDatabaseExecutor(_dataSource);
         } else {
             throw new RuntimeException("Class of executor is not supported: " + classOfExecutor);
         }

@@ -10,9 +10,6 @@ import tech.nmhillusion.n2mix.helper.log.LogHelper;
 import tech.nmhillusion.n2mix.type.function.ThrowableNoInputFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidNoInputFunction;
 
-import javax.sql.DataSource;
-import java.io.Closeable;
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -25,24 +22,19 @@ import static tech.nmhillusion.n2mix.util.ExceptionUtil.getExceptionFromStacktra
  * <p>
  * created date: 2023-12-01
  */
-public class StatementExecutor implements Closeable {
+public class StatementExecutor implements AutoCloseable {
     public static final String RESULT_PARAM_NAME = "result";
-    private final DataSource dataSource;
-    private JdbcTemplate jdbcTemplate = null;
-    private Session session = null;
+    private final JdbcTemplate jdbcTemplate;
+    private final Session session;
 
     private boolean isClosed = false;
 
-    public StatementExecutor(DataSource dataSource,
-                             Session session) {
-        this.dataSource = dataSource;
+    public StatementExecutor(Session session) {
         this.session = session;
         this.jdbcTemplate = null;
     }
 
-    public StatementExecutor(DataSource dataSource,
-                             JdbcTemplate jdbcTemplate) {
-        this.dataSource = dataSource;
+    public StatementExecutor(JdbcTemplate jdbcTemplate) {
         this.session = null;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -385,11 +377,7 @@ public class StatementExecutor implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         isClosed = true;
-
-        if (null != session) {
-            session.close();
-        }
     }
 }

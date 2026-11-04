@@ -134,7 +134,7 @@ public class SqlCallableStatementBuilderTest {
     @Test
     void testSqlBuilderToString() {
         Assertions.assertDoesNotThrow(() -> {
-            final StatementExecutor statementExecutor = new StatementExecutor(null, (Session) null);
+            final StatementExecutor statementExecutor = new StatementExecutor((Session) null);
             final String sqlBuilderString = new SqlCallableStatementBuilder(statementExecutor)
                     .setProcedureName("amp.pkg_business_execution.p_log__info")
                     .addArgument("i_task_id", "52709")
