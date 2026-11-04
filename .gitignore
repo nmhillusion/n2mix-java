@@ -35,3 +35,6 @@ build/
 test.*.xlsx
 
 outputs
+
+### Runtime logs ###
+logs/
