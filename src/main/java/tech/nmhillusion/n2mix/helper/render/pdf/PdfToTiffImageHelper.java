@@ -29,8 +29,16 @@ import java.util.List;
 
 public class PdfToTiffImageHelper {
 
-    private byte[] convertToTiffUsingImageWriterJavax(PDDocument pdDocument,
-                                                      PDFRenderer pdfRenderer,
+    private static void throwIfPageIndexInvalid(String fileId, int pageIndex, int pagesCount) {
+        if (0 > pageIndex || pageIndex >= pagesCount) {
+            throw new IndexOutOfBoundsException(
+                    "[%s] Page index out of bounds: %s, must be in range [0..%s]"
+                            .formatted(fileId, pageIndex, pagesCount - 1)
+            );
+        }
+    }
+
+    private byte[] convertToTiffUsingImageWriterJavax(PDFRenderer pdfRenderer,
                                                       ImageCompressionType compressionType,
                                                       int dpiOfImage,
                                                       String fileId,
@@ -40,11 +48,6 @@ public class PdfToTiffImageHelper {
 
         if (!tiffImageWriterIter.hasNext()) {
             throw new IOException("Cannot find ImageWriter for TIFF image");
-        }
-
-        final int pagesCount = pdDocument.getNumberOfPages();
-        if (0 > pageIndex || pageIndex >= pagesCount) {
-            throw new IOException("[%s] Page index out of bounds: %s, must be in range [0..%s]".formatted(fileId, pageIndex, pagesCount));
         }
 
         final ImageWriter imageWriter_ = tiffImageWriterIter.next();
@@ -80,19 +83,12 @@ public class PdfToTiffImageHelper {
         }
     }
 
-    private byte[] convertToTiffUsingImageIOUtilPdfBox(PDDocument pdDocument,
-                                                       PDFRenderer pdfRenderer,
+    private byte[] convertToTiffUsingImageIOUtilPdfBox(PDFRenderer pdfRenderer,
                                                        ImageCompressionType compressionType,
                                                        int dpiOfImage,
                                                        String fileId,
                                                        int pageIndex
     ) throws IOException {
-        final int pagesCount = pdDocument.getNumberOfPages();
-
-        if (0 > pageIndex || pageIndex >= pagesCount) {
-            throw new IOException("[%s] Page index out of bounds: %s, must be in range [0..%s]".formatted(fileId, pageIndex, pagesCount));
-        }
-
         final BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(
                 pageIndex,
                 dpiOfImage,
@@ -130,7 +126,6 @@ public class PdfToTiffImageHelper {
                 for (int pageIdx = 0; pageIdx < numberOfPages; pageIdx++) {
                     tiffDataList.add(
                             convertToTiffUsingImageIOUtilPdfBox(
-                                    pdDocument,
                                     pdfRenderer,
                                     compressionType,
                                     dpiOfImage,
@@ -139,7 +134,7 @@ public class PdfToTiffImageHelper {
                             )
                     );
                 }
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 LogHelper.getLogger(this).warn(
                         "Fail to convert to tiff (String fileId = %s, InputStream pdfData, int dpiOfImage = %s, ImageCompressionType compressionType = %s) using method convertToTiffUsingImageIOUtilPdfBox, Error: %s, switch to use method convertToTiffUsingImageWriterJavax"
                                 .formatted(
@@ -151,17 +146,21 @@ public class PdfToTiffImageHelper {
                 );
 
                 tiffDataList.clear();
-                for (int pageIdx = 0; pageIdx < numberOfPages; pageIdx++) {
-                    tiffDataList.add(
-                            convertToTiffUsingImageWriterJavax(
-                                    pdDocument,
-                                    pdfRenderer,
-                                    compressionType,
-                                    dpiOfImage,
-                                    fileId,
-                                    pageIdx
-                            )
-                    );
+                try {
+                    for (int pageIdx = 0; pageIdx < numberOfPages; pageIdx++) {
+                        tiffDataList.add(
+                                convertToTiffUsingImageWriterJavax(
+                                        pdfRenderer,
+                                        compressionType,
+                                        dpiOfImage,
+                                        fileId,
+                                        pageIdx
+                                )
+                        );
+                    }
+                } catch (Exception fallbackEx) {
+                    fallbackEx.addSuppressed(ex);
+                    throw fallbackEx;
                 }
 
             }
@@ -186,19 +185,20 @@ public class PdfToTiffImageHelper {
         try (final PDDocument pdDocument = PDDocument.load(pdfData)) {
             final PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
 
+            throwIfPageIndexInvalid(fileId, pageIndex, pdDocument.getNumberOfPages());
+
             ///////////////////////////////////////////////////
 
             try {
 
                 tiffData = convertToTiffUsingImageIOUtilPdfBox(
-                        pdDocument,
                         pdfRenderer,
                         compressionType,
                         dpiOfImage,
                         fileId,
                         pageIndex
                 );
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 LogHelper.getLogger(this).warn(
                         "Fail to convert to tiff (String fileId = %s, InputStream pdfData, int dpiOfImage = %s, ImageCompressionType compressionType = %s, pageIndex = %s) using method convertToTiffUsingImageIOUtilPdfBox, Error: %s, switch to use method convertToTiffUsingImageWriterJavax"
                                 .formatted(
@@ -210,14 +210,18 @@ public class PdfToTiffImageHelper {
                                 )
                 );
 
-                tiffData = convertToTiffUsingImageWriterJavax(
-                        pdDocument,
-                        pdfRenderer,
-                        compressionType,
-                        dpiOfImage,
-                        fileId,
-                        pageIndex
-                );
+                try {
+                    tiffData = convertToTiffUsingImageWriterJavax(
+                            pdfRenderer,
+                            compressionType,
+                            dpiOfImage,
+                            fileId,
+                            pageIndex
+                    );
+                } catch (Exception fallbackEx) {
+                    fallbackEx.addSuppressed(ex);
+                    throw fallbackEx;
+                }
             }
 
             ///////////////////////////////////////////////////

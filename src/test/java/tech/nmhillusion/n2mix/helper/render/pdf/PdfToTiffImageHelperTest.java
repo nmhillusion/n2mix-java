@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import tech.nmhillusion.n2mix.constant.ImageCompressionType;
 import tech.nmhillusion.n2mix.helper.render.ClearFolderHelper;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,8 +66,7 @@ class PdfToTiffImageHelperTest {
 
     @Test
     void convertToTiff_pageCountMatchesPdfPages() throws Exception {
-        // Verify that convertToTiff returns exactly the number of pages in the PDF,
-        // catching the duplicate pages bug where fallback would produce extra pages
+        // Smoke test of the happy path: one TIFF per page, and every TIFF is decodable
         final String inpFileName = "pdf/TheVerge.pdf";
         try (final InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(inpFileName)) {
             Objects.requireNonNull(pdfStream);
@@ -81,12 +83,14 @@ class PdfToTiffImageHelperTest {
                             .convertToTiff(inpFileName, pdfStream2, 124, ImageCompressionType.Deflate);
 
                     assertEquals(expectedPageCount, tiffDataList.size(),
-                            "TIFF page count should match PDF page count - duplicates indicate fallback bug");
+                            "TIFF page count should match PDF page count");
 
-                    // Each page should produce non-empty TIFF data
+                    // Each page must be a decodable TIFF with content
                     for (int i = 0; i < tiffDataList.size(); i++) {
-                        assertNotNull(tiffDataList.get(i), "Page " + i + " should not be null");
-                        assertTrue(tiffDataList.get(i).length > 0, "Page " + i + " should not be empty");
+                        final BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(tiffDataList.get(i)));
+                        assertNotNull(decoded, "Page " + i + " must decode as a TIFF");
+                        assertTrue(decoded.getWidth() > 0 && decoded.getHeight() > 0,
+                                "Page " + i + " must have content");
                     }
                 }
             }
@@ -95,67 +99,75 @@ class PdfToTiffImageHelperTest {
 
     @Test
     void convertToTiffForPage_singlePage() throws Exception {
-        // Test the single-page conversion method
+        // Test the single-page conversion method, and prove that pageIndex is honoured
         final String inpFileName = "pdf/TheVerge.pdf";
         try (final InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(inpFileName)) {
-            final byte[] pdfBytes = pdfStream.readAllBytes();
+            final byte[] pdfBytes = Objects.requireNonNull(pdfStream).readAllBytes();
 
+            final int pageCount;
             try (final PDDocument doc = PDDocument.load(new ByteArrayInputStream(pdfBytes))) {
-                final int pageCount = doc.getNumberOfPages();
-
-                // Convert first page
-                try (final InputStream pdfStream2 = new ByteArrayInputStream(pdfBytes)) {
-                    final byte[] tiffData = new PdfToTiffImageHelper()
-                            .convertToTiffForPage(inpFileName, pdfStream2, 124, ImageCompressionType.Deflate, 0);
-
-                    assertNotNull(tiffData, "Single page TIFF data should not be null");
-                    assertTrue(tiffData.length > 0, "Single page TIFF data should not be empty");
-                }
-
-                // Convert last page
-                try (final InputStream pdfStream3 = new ByteArrayInputStream(pdfBytes)) {
-                    final byte[] tiffData = new PdfToTiffImageHelper()
-                            .convertToTiffForPage(inpFileName, pdfStream3, 124, ImageCompressionType.Deflate, pageCount - 1);
-
-                    assertNotNull(tiffData, "Last page TIFF data should not be null");
-                    assertTrue(tiffData.length > 0, "Last page TIFF data should not be empty");
-                }
+                pageCount = doc.getNumberOfPages();
             }
+
+            final List<byte[]> allPages = new PdfToTiffImageHelper()
+                    .convertToTiff(inpFileName, new ByteArrayInputStream(pdfBytes), 124, ImageCompressionType.Deflate);
+            assertEquals(pageCount, allPages.size());
+
+            final byte[] firstPage = new PdfToTiffImageHelper()
+                    .convertToTiffForPage(inpFileName, new ByteArrayInputStream(pdfBytes), 124, ImageCompressionType.Deflate, 0);
+            final byte[] lastPage = new PdfToTiffImageHelper()
+                    .convertToTiffForPage(inpFileName, new ByteArrayInputStream(pdfBytes), 124, ImageCompressionType.Deflate, pageCount - 1);
+
+            assertArrayEquals(allPages.get(0), firstPage,
+                    "page 0 must match the multi-page result for page 0");
+            assertFalse(Arrays.equals(firstPage, lastPage),
+                    "page selection must not always render page 0");
+            assertFalse(Arrays.equals(allPages.get(pageCount - 1), firstPage),
+                    "page 0 and the last page must differ");
         }
     }
 
     @Test
     void convertToTiffForPage_invalidPageIndex_negative() throws Exception {
-        // Test that negative page index throws IOException
+        // Test that negative page index throws IndexOutOfBoundsException
         final String inpFileName = "pdf/TheVerge.pdf";
         try (final InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(inpFileName)) {
-            final byte[] pdfBytes = pdfStream.readAllBytes();
+            final byte[] pdfBytes = Objects.requireNonNull(pdfStream).readAllBytes();
 
-            assertThrows(IOException.class, () -> {
+            final int pageCount;
+            try (final PDDocument doc = PDDocument.load(new ByteArrayInputStream(pdfBytes))) {
+                pageCount = doc.getNumberOfPages();
+            }
+
+            final IndexOutOfBoundsException ex = assertThrows(IndexOutOfBoundsException.class, () -> {
                 try (final InputStream stream = new ByteArrayInputStream(pdfBytes)) {
                     new PdfToTiffImageHelper()
                             .convertToTiffForPage(inpFileName, stream, 124, ImageCompressionType.Deflate, -1);
                 }
-            }, "Negative page index should throw IOException");
+            });
+            assertTrue(ex.getMessage().contains("must be in range [0.." + (pageCount - 1) + "]"),
+                    "message must state the inclusive maximum index: " + ex.getMessage());
         }
     }
 
     @Test
     void convertToTiffForPage_invalidPageIndex_outOfBounds() throws Exception {
-        // Test that page index >= page count throws IOException
+        // Test that page index >= page count throws IndexOutOfBoundsException
         final String inpFileName = "pdf/TheVerge.pdf";
         try (final InputStream pdfStream = getClass().getClassLoader().getResourceAsStream(inpFileName)) {
-            final byte[] pdfBytes = pdfStream.readAllBytes();
+            final byte[] pdfBytes = Objects.requireNonNull(pdfStream).readAllBytes();
 
             try (final PDDocument doc = PDDocument.load(new ByteArrayInputStream(pdfBytes))) {
                 final int pageCount = doc.getNumberOfPages();
 
-                assertThrows(IOException.class, () -> {
+                final IndexOutOfBoundsException ex = assertThrows(IndexOutOfBoundsException.class, () -> {
                     try (final InputStream stream = new ByteArrayInputStream(pdfBytes)) {
                         new PdfToTiffImageHelper()
                                 .convertToTiffForPage(inpFileName, stream, 124, ImageCompressionType.Deflate, pageCount);
                     }
-                }, "Page index equal to page count should throw IOException");
+                });
+                assertTrue(ex.getMessage().contains("must be in range [0.." + (pageCount - 1) + "]"),
+                        "message must state the inclusive maximum index: " + ex.getMessage());
             }
         }
     }
@@ -206,7 +218,7 @@ class PdfToTiffImageHelperTest {
                 // Use reflection to access the private fallback method
                 Method javaxMethod = PdfToTiffImageHelper.class.getDeclaredMethod(
                         "convertToTiffUsingImageWriterJavax",
-                        PDDocument.class, PDFRenderer.class, ImageCompressionType.class, int.class, String.class, int.class
+                        PDFRenderer.class, ImageCompressionType.class, int.class, String.class, int.class
                 );
                 javaxMethod.setAccessible(true);
 
@@ -225,13 +237,13 @@ class PdfToTiffImageHelperTest {
                                     if (pageIdx == 2) {
                                         throw new IOException("Simulated failure on page 2");
                                     }
-                                    tiffDataList.add(invokePrivateMethod(javaxMethod, pdDocument, pdfRenderer, compressionType, dpiOfImage, fileId, pageIdx));
+                                    tiffDataList.add(invokePrivateMethod(javaxMethod, pdfRenderer, compressionType, dpiOfImage, fileId, pageIdx));
                                 }
                             } catch (Throwable ex) {
                                 // This is the fallback path - clear the list and re-render all pages
                                 tiffDataList.clear();
                                 for (int pageIdx = 0; pageIdx < numberOfPages; pageIdx++) {
-                                    tiffDataList.add(invokePrivateMethod(javaxMethod, pdDocument, pdfRenderer, compressionType, dpiOfImage, fileId, pageIdx));
+                                    tiffDataList.add(invokePrivateMethod(javaxMethod, pdfRenderer, compressionType, dpiOfImage, fileId, pageIdx));
                                 }
                             }
 
@@ -239,11 +251,11 @@ class PdfToTiffImageHelperTest {
                         }
                     }
 
-                    private byte[] invokePrivateMethod(Method method, PDDocument doc, PDFRenderer renderer,
+                    private byte[] invokePrivateMethod(Method method, PDFRenderer renderer,
                                                        ImageCompressionType compression, int dpi, String fileId, int page) throws IOException {
                         try {
                             @SuppressWarnings("unchecked")
-                            byte[] result = (byte[]) method.invoke(this, doc, renderer, compression, dpi, fileId, page);
+                            byte[] result = (byte[]) method.invoke(this, renderer, compression, dpi, fileId, page);
                             return result;
                         } catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
                             throw new IOException("Reflection failed", e);
@@ -280,7 +292,7 @@ class PdfToTiffImageHelperTest {
             // Use reflection to access the private fallback method
             Method javaxMethod = PdfToTiffImageHelper.class.getDeclaredMethod(
                     "convertToTiffUsingImageWriterJavax",
-                    PDDocument.class, PDFRenderer.class, ImageCompressionType.class, int.class, String.class, int.class
+                    PDFRenderer.class, ImageCompressionType.class, int.class, String.class, int.class
             );
             javaxMethod.setAccessible(true);
 
@@ -299,7 +311,7 @@ class PdfToTiffImageHelperTest {
                             try {
                                 @SuppressWarnings("unchecked")
                                 byte[] result = (byte[]) javaxMethod.invoke(
-                                        this, pdDocument, pdfRenderer, compressionType, dpiOfImage, fileId, pageIndex
+                                        this, pdfRenderer, compressionType, dpiOfImage, fileId, pageIndex
                                 );
                                 return result;
                             } catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
