@@ -18,7 +18,15 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 import static tech.nmhillusion.n2mix.util.ExceptionUtil.getExceptionFromStacktrace;
 
 /**
- * created by: chubb
+ * Executes SQL statements on either a Hibernate {@link Session} or a Spring {@link JdbcTemplate}.
+ *
+ * <p><b>Statement lifetime.</b> Every {@link PreparedStatement} or {@link CallableStatement} created
+ * by this executor is closed before the executor method returns, regardless of whether the
+ * callback completes normally or throws. Consequently, a callback must not leak the statement,
+ * any {@link java.sql.ResultSet} derived from it, or any {@link java.sql.Blob}/{@link java.sql.Clob}
+ * stream outside the callback — those resources are only valid inside the callback.
+ *
+ * <p>created by: nmhillusion
  * <p>
  * created date: 2023-12-01
  */
@@ -91,7 +99,11 @@ public class StatementExecutor implements AutoCloseable {
     public void doPreparedStatement(String sql, NoReturnPreparedStatementCallback callback_) throws SQLException {
         wrapperToSqlException(() -> {
             if (null != session) {
-                session.doWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
+                session.doWork(_conn -> {
+                    try (final PreparedStatement preparedStatement_ = _conn.prepareStatement(sql)) {
+                        callback_.apply(preparedStatement_);
+                    }
+                });
             } else if (null != jdbcTemplate) {
                 jdbcTemplate.execute(sql, (PreparedStatement preparedStatement_) -> {
                     callback_.apply(preparedStatement_);
@@ -133,7 +145,11 @@ public class StatementExecutor implements AutoCloseable {
     public <T> T doReturningPreparedStatement(String sql, PreparedStatementCallback<T> callback_) throws SQLException {
         return wrapperToSqlExceptionReturning(() -> {
             if (null != session) {
-                return session.doReturningWork(_conn -> callback_.apply(_conn.prepareStatement(sql)));
+                return session.doReturningWork(_conn -> {
+                    try (final PreparedStatement preparedStatement_ = _conn.prepareStatement(sql)) {
+                        return callback_.apply(preparedStatement_);
+                    }
+                });
             } else if (null != jdbcTemplate) {
                 return jdbcTemplate.execute(sql, (PreparedStatement pre_) -> callback_.apply(pre_));
             } else {
@@ -174,10 +190,11 @@ public class StatementExecutor implements AutoCloseable {
             final String callStatement = "{ ? = call " + callQuery + " } ";
             if (null != session) {
                 return session.doReturningWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(callStatement);
-                    _callableStatement.registerOutParameter(1, returnType);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(callStatement)) {
+                        _callableStatement.registerOutParameter(1, returnType);
 
-                    return callableStatementCallback.apply(_callableStatement);
+                        return callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 return jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
@@ -220,11 +237,12 @@ public class StatementExecutor implements AutoCloseable {
             final String callStatement = "{ ? = call " + callQuery + " } ";
             if (null != session) {
                 session.doWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(
-                            callStatement);
-                    _callableStatement.registerOutParameter(1, returnType);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(
+                            callStatement)) {
+                        _callableStatement.registerOutParameter(1, returnType);
 
-                    callableStatementCallback.apply(_callableStatement);
+                        callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
@@ -249,10 +267,10 @@ public class StatementExecutor implements AutoCloseable {
             final String callStatement = "{ call " + callQuery + " } ";
             if (null != session) {
                 return session.doReturningWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(
-                            callStatement);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(callStatement)) {
 
-                    return callableStatementCallback.apply(_callableStatement);
+                        return callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 return jdbcTemplate.execute(callStatement, callableStatementCallback::apply);
@@ -272,10 +290,10 @@ public class StatementExecutor implements AutoCloseable {
             final String callStatement = "{ call " + callQuery + " } ";
             if (null != session) {
                 session.doWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(
-                            callStatement);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(callStatement)) {
 
-                    callableStatementCallback.apply(_callableStatement);
+                        callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 jdbcTemplate.execute(callStatement, (CallableStatement call_) -> {
@@ -318,10 +336,11 @@ public class StatementExecutor implements AutoCloseable {
 
             if (null != session) {
                 return session.doReturningWork(_conn -> {
-                    final CallableStatement _callableStatement = _conn.prepareCall(queryString);
-                    _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(queryString)) {
+                        _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
-                    return callableStatementCallback.apply(_callableStatement);
+                        return callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 return jdbcTemplate.execute(queryString, (CallableStatement call_) -> {
@@ -358,10 +377,11 @@ public class StatementExecutor implements AutoCloseable {
             if (null != session) {
                 session.doWork(_conn -> {
 
-                    final CallableStatement _callableStatement = _conn.prepareCall(queryString);
-                    _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
+                    try (final CallableStatement _callableStatement = _conn.prepareCall(queryString)) {
+                        _callableStatement.registerOutParameter(RESULT_PARAM_NAME, returnType);
 
-                    callableStatementCallback.apply(_callableStatement);
+                        callableStatementCallback.apply(_callableStatement);
+                    }
                 });
             } else if (null != jdbcTemplate) {
                 jdbcTemplate.execute(queryString, (CallableStatement call_) -> {
