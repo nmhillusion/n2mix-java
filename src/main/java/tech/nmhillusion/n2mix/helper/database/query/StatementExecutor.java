@@ -42,11 +42,17 @@ public class StatementExecutor implements AutoCloseable {
     private boolean isClosed = false;
 
     public StatementExecutor(Session session) {
+        if (null == session) {
+            throw new IllegalArgumentException("Session must not be null");
+        }
         this.session = session;
         this.jdbcTemplate = null;
     }
 
     public StatementExecutor(JdbcTemplate jdbcTemplate) {
+        if (null == jdbcTemplate) {
+            throw new IllegalArgumentException("JdbcTemplate must not be null");
+        }
         this.session = null;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -61,6 +67,8 @@ public class StatementExecutor implements AutoCloseable {
                 throw new SQLException("This statement executor has closed");
             }
             return func.apply();
+        } catch (Error err) {
+            throw err;
         } catch (Throwable ex) {
             throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
         }
@@ -72,6 +80,8 @@ public class StatementExecutor implements AutoCloseable {
                 throw new SQLException("This statement executor has closed");
             }
             func.apply();
+        } catch (Error err) {
+            throw err;
         } catch (Throwable ex) {
             throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
         }

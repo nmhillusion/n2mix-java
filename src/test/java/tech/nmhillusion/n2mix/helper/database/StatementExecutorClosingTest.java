@@ -202,4 +202,35 @@ class StatementExecutorClosingTest {
         assertTrue(thrown.getMessage().contains("boom") || thrown.getCause() != null,
                 "Original exception should surface");
     }
+
+    // --- E7: Constructor null validation ------------------------------------
+
+    @Test void constructor_nullSession_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new tech.nmhillusion.n2mix.helper.database.query.StatementExecutor((Session) null));
+    }
+
+    @Test void constructor_nullJdbcTemplate_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new tech.nmhillusion.n2mix.helper.database.query.StatementExecutor(
+                        (org.springframework.jdbc.core.JdbcTemplate) null));
+    }
+
+    // --- E6: Error instances are rethrown unchanged --------------------------
+
+    @Test void doPreparedStatement_Error_rethrownUnchanged() {
+        tech.nmhillusion.n2mix.helper.database.query.StatementExecutor se =
+                new tech.nmhillusion.n2mix.helper.database.query.StatementExecutor(fakeSession());
+        OutOfMemoryError thrown = assertThrows(OutOfMemoryError.class, () ->
+                se.doPreparedStatement("select 1", ps -> { throw new OutOfMemoryError("OOM"); }));
+        assertEquals("OOM", thrown.getMessage());
+    }
+
+    @Test void doReturningPreparedStatement_Error_rethrownUnchanged() {
+        tech.nmhillusion.n2mix.helper.database.query.StatementExecutor se =
+                new tech.nmhillusion.n2mix.helper.database.query.StatementExecutor(fakeSession());
+        StackOverflowError thrown = assertThrows(StackOverflowError.class, () ->
+                se.doReturningPreparedStatement("select 1", ps -> { throw new StackOverflowError("SO"); }));
+        assertEquals("SO", thrown.getMessage());
+    }
 }
