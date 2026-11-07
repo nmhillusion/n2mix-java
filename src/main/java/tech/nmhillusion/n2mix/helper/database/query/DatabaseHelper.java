@@ -3,7 +3,6 @@ package tech.nmhillusion.n2mix.helper.database.query;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.hibernate.SessionFactory;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import tech.nmhillusion.n2mix.exception.InvalidArgument;
 import tech.nmhillusion.n2mix.helper.database.query.executor.HibernateSessionDatabaseExecutor;
 import tech.nmhillusion.n2mix.helper.database.query.executor.JdbcTemplateDatabaseExecutor;
@@ -50,24 +49,6 @@ public class DatabaseHelper {
         this.classOfExecutor = classOfExecutor;
     }
 
-    /**
-     * @return get worker with Internal Session Factory
-     */
-    @Deprecated
-    public DatabaseWorker getWorker() {
-        return getWorker(this.mSessionFactory);
-    }
-
-    @Deprecated
-    public DatabaseWorker getWorker(SessionFactory sessionFactory) {
-        return getWorker(sessionFactory, mDataSource);
-    }
-
-    @Deprecated
-    public DatabaseWorker getWorker(SessionFactory sessionFactory, DataSource _dataSource) {
-        return new DatabaseWorker(sessionFactory, _dataSource, this::closeConnectionWrapper);
-    }
-
     public DatabaseExecutor getExecutor() {
         return getExecutor(this.mSessionFactory);
     }
@@ -102,7 +83,6 @@ public class DatabaseHelper {
             return;
         }
 
-//        for (DataSource iDataSource : Arrays.asList(dataSource, mDataSource)) {
         for (DataSource iDataSource : Collections.singletonList(mDataSource)) {
             doWarningLargeConnections(iDataSource);
         }
@@ -127,21 +107,4 @@ public class DatabaseHelper {
         }
     }
 
-    public boolean closeConnectionWrapper(DataSource dataSource, ConnectionWrapper connectionWrapper) {
-        boolean result = true;
-        try {
-            if (null != dataSource &&
-                    null != connectionWrapper &&
-                    null != connectionWrapper.getConnection()) {
-                DataSourceUtils.releaseConnection(connectionWrapper.getConnection(), dataSource);
-//                getLog(this).info("__release__connection__");
-//                connectionWrapper.getConnection().close();
-            }
-            warningLargeConnections();
-        } catch (Exception ex) {
-            getLogger(this).error(ex);
-            result = false;
-        }
-        return result;
-    }
 }

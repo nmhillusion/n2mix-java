@@ -23,9 +23,6 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 
 public class SqlCallableStatementBuilder {
-    @Deprecated
-    private final ConnectionWrapper connectionWrapper;
-
     private final StatementExecutor statementExecutor;
 
     private final LinkedList<DbInputModel> dbInputModels = new LinkedList<>();
@@ -34,13 +31,7 @@ public class SqlCallableStatementBuilder {
     private Optional<Integer> returnTypeOpt = Optional.empty();
     private boolean hasSetCallType = false;
 
-    public SqlCallableStatementBuilder(ConnectionWrapper connectionWrapper) {
-        this.connectionWrapper = connectionWrapper;
-        this.statementExecutor = null;
-    }
-
     public SqlCallableStatementBuilder(StatementExecutor statementExecutor) {
-        this.connectionWrapper = null;
         this.statementExecutor = statementExecutor;
     }
 
@@ -188,36 +179,6 @@ public class SqlCallableStatementBuilder {
         }
 
         return finalQuery;
-    }
-
-    @Deprecated
-    public CallableStatement build() throws SQLException {
-        if (null == connectionWrapper) {
-            throw new IllegalArgumentException("Fail when not exist connectionWrapper");
-        }
-
-        if (!StringValidator.isBlank(functionName)) {
-            if (returnTypeOpt.isEmpty()) {
-                throw new IllegalArgumentException("Fail when setting function name without returnType, by setReturnType(int)");
-            }
-
-            final CallableStatement funcCallableStatement = connectionWrapper.buildCallableStatementNamed(
-                    buildQueryBuilder(functionName),
-                    returnTypeOpt.get()
-            );
-            addDbInputsToCallable(funcCallableStatement);
-
-            return funcCallableStatement;
-        } else if (!StringValidator.isBlank(procedureName)) {
-            final CallableStatement procCallableStatement = connectionWrapper.buildPureCallableStatement(
-                    buildQueryBuilder(procedureName)
-            );
-            addDbInputsToCallable(procCallableStatement);
-
-            return procCallableStatement;
-        } else {
-            throw new SQLException("Does NOT set functionName or procedureName");
-        }
     }
 
     public void build(NoReturnCallableStatementCallback noReturnCallback) throws SQLException {
