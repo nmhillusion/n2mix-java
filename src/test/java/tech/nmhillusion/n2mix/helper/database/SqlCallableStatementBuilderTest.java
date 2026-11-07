@@ -2,6 +2,9 @@ package tech.nmhillusion.n2mix.helper.database;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -134,23 +137,32 @@ public class SqlCallableStatementBuilderTest {
     @Test
     void testSqlBuilderToString() {
         Assertions.assertDoesNotThrow(() -> {
-            final StatementExecutor statementExecutor = new StatementExecutor((Session) null);
-            final String sqlBuilderString = new SqlCallableStatementBuilder(statementExecutor)
-                    .setProcedureName("amp.pkg_business_execution.p_log__info")
-                    .addArgument("i_task_id", "52709")
-                    .addArgument("i_is_warning", false)
-                    .addArgument("i_log_score", 8.9f)
-                    .addArgument("i_log_content", "copyLoosePrintDocumentsToFolder() = [PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$")
-                    .toString();
+            final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                    .applySetting("hibernate.connection.driver_class", "org.h2.Driver")
+                    .applySetting("hibernate.connection.url", "jdbc:h2:mem:n2mix_test_toString;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+                    .applySetting("hibernate.connection.username", "sa")
+                    .applySetting("hibernate.connection.password", "")
+                    .applySetting("hibernate.dialect", "org.hibernate.dialect.H2Dialect")
+                    .build();
+            try (SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+                 Session session = sessionFactory.openSession()) {
+                final StatementExecutor statementExecutor = new StatementExecutor(session);
+                final String sqlBuilderString = new SqlCallableStatementBuilder(statementExecutor)
+                        .setProcedureName("amp.pkg_business_execution.p_log__info")
+                        .addArgument("i_task_id", "52709")
+                        .addArgument("i_is_warning", false)
+                        .addArgument("i_log_score", 8.9f)
+                        .addArgument("i_log_content", "copyLoosePrintDocumentsToFolder() = [PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$}, PrintingTaskDocumentDto{VALID_PATTERN=^(\\d+_)?partialType_\\d+\\.[\\w_-]+\\.pdf$")
+                        .toString();
 
-            getLogger(this).info("sqlBuilderString = " + sqlBuilderString);
+                getLogger(this).info("sqlBuilderString = " + sqlBuilderString);
 
-            Assertions.assertFalse(StringValidator.isBlank(sqlBuilderString));
-            Assertions.assertTrue(sqlBuilderString.contains("i_task_id"));
-            Assertions.assertTrue(sqlBuilderString.contains("i_is_warning"));
-            Assertions.assertTrue(sqlBuilderString.contains("i_log_score"));
-            Assertions.assertTrue(sqlBuilderString.contains("i_log_content"));
-
+                Assertions.assertFalse(StringValidator.isBlank(sqlBuilderString));
+                Assertions.assertTrue(sqlBuilderString.contains("i_task_id"));
+                Assertions.assertTrue(sqlBuilderString.contains("i_is_warning"));
+                Assertions.assertTrue(sqlBuilderString.contains("i_log_score"));
+                Assertions.assertTrue(sqlBuilderString.contains("i_log_content"));
+            }
         });
     }
 }
