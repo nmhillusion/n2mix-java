@@ -11,7 +11,7 @@ import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 import java.util.Objects;
 
 /**
- * created by: chubb
+ * created by: nmhillusion
  * <p>
  * created date: 2023-12-16
  */

@@ -25,7 +25,7 @@ import static tech.nmhillusion.n2mix.helper.database.DatabaseTestHelper.getGitHu
 import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 
 /**
- * created by: chubb
+ * created by: nmhillusion
  * <p>
  * created date: 2023-12-02
  */
