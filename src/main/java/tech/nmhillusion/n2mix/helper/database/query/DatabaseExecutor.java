@@ -1,5 +1,6 @@
 package tech.nmhillusion.n2mix.helper.database.query;
 
+import tech.nmhillusion.n2mix.helper.log.MixLogger;
 import tech.nmhillusion.n2mix.type.function.ThrowableFunction;
 import tech.nmhillusion.n2mix.type.function.ThrowableVoidFunction;
 
@@ -29,18 +30,36 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
  */
 
 public abstract class DatabaseExecutor {
+    private final MixLogger logger = getLogger(this);
+
+    /**
+     * Execute a database operation that returns a value.
+     *
+     * <p><b>Throws contract.</b> This method declares {@code throws Throwable} for binary
+     * compatibility with existing callers. In practice it throws {@code SQLException} or
+     * {@link tech.nmhillusion.n2mix.exception.AppRuntimeException}. The declaration will be
+     * narrowed in the next major version.</p>
+     */
     public final <T> T doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
-        if (getLogger(this).isDebugEnabled()) {
-            getLogger(this).debug("execute doReturningWork on " + getClass().getName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("execute doReturningWork on " + getClass().getName());
         }
         return __doReturningWork(func);
     }
 
     protected abstract <T> T __doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable;
 
+    /**
+     * Execute a database operation that does not return a value.
+     *
+     * <p><b>Throws contract.</b> This method declares {@code throws Throwable} for binary
+     * compatibility with existing callers. In practice it throws {@code SQLException} or
+     * {@link tech.nmhillusion.n2mix.exception.AppRuntimeException}. The declaration will be
+     * narrowed in the next major version.</p>
+     */
     public final void doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
-        if (getLogger(this).isDebugEnabled()) {
-            getLogger(this).debug("execute doWork on " + getClass().getName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("execute doWork on " + getClass().getName());
         }
         __doWork(func);
     }

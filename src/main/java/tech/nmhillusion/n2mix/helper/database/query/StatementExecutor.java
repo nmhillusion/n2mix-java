@@ -70,7 +70,8 @@ public class StatementExecutor implements AutoCloseable {
         } catch (Error err) {
             throw err;
         } catch (Throwable ex) {
-            throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
+            SQLException sqlEx = getExceptionFromStacktrace(ex, SQLException.class, null);
+            throw (sqlEx != null) ? sqlEx : new SQLException(ex);
         }
     }
 
@@ -83,7 +84,8 @@ public class StatementExecutor implements AutoCloseable {
         } catch (Error err) {
             throw err;
         } catch (Throwable ex) {
-            throw getExceptionFromStacktrace(ex, SQLException.class, new SQLException(ex));
+            SQLException sqlEx = getExceptionFromStacktrace(ex, SQLException.class, null);
+            throw (sqlEx != null) ? sqlEx : new SQLException(ex);
         }
     }
 
@@ -185,10 +187,10 @@ public class StatementExecutor implements AutoCloseable {
      * <pre style='background-color: #333333; color: #008b8b;'>
      *
      * List&lt;String&gt; result_ = statementExecutor.doReturningCallableStatement("ams.pkg_example.f_demo(i_username => ?)", Types.REF_CURSOR, (call_) -> {
-     *     call.setString(2, "it_query");
-     *     call.execute();
+     *     call_.setString(2, "it_query");
+     *     call_.execute();
      *
-     *     Object result = call.getObject(1);
+     *     Object result = call_.getObject(1);
      *     List&lt;String&gt; resultList = new ArrayList<>();
      *     // ... do something
      *     return resultList;
@@ -235,10 +237,10 @@ public class StatementExecutor implements AutoCloseable {
      * <pre style='background-color: #333333; color: #008b8b;'>
      *
      * statementExecutor.doCallableStatement("ams.pkg_example.f_demo(i_username => ?)", Types.REF_CURSOR, (call_) -> {
-     *     call.setString(2, "it_query");
-     *     call.execute();
+     *     call_.setString(2, "it_query");
+     *     call_.execute();
      *
-     *     Object result = call.getObject(1);
+     *     Object result = call_.getObject(1);
      * });
      * </pre>
      *
@@ -327,10 +329,10 @@ public class StatementExecutor implements AutoCloseable {
      * <pre style='background-color: #333333; color: #008b8b;'>
      *
      * List&lt;String&gt; result_ = statementExecutor.doReturningCallableStatementNamed("ams.pkg_example.f_demo(i_username => :i_username)", Types.REF_CURSOR, (call_) -> {
-     *     call.setString("i_username", "it_query");
-     *     call.execute();
+     *     call_.setString("i_username", "it_query");
+     *     call_.execute();
      *
-     *     Object result = call.getObject(StatementExecutor.RESULT_PARAM_NAME);
+     *     Object result = call_.getObject(StatementExecutor.RESULT_PARAM_NAME);
      *     List&lt;String&gt; resultList = new ArrayList<>();
      *     if (result instanceof ResultSet resultSet) {
      *       //...do something with resultSet
@@ -374,8 +376,8 @@ public class StatementExecutor implements AutoCloseable {
      * <pre style='background-color: #333333; color: #008b8b;'>
      *
      * statementExecutor.doCallableStatementNamed("ams.pkg_example.f_demo_2(i_username => :i_username)", Types.REF_CURSOR, (call_) -> {
-     *     call.setString("i_username", "it_query");
-     *     call.execute();
+     *     call_.setString("i_username", "it_query");
+     *     call_.execute();
      * });
      * </pre>
      *
