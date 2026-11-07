@@ -28,32 +28,51 @@ public class JdbcTemplateDatabaseExecutor extends DatabaseExecutor {
 
     @Override
     protected <T> T __doReturningWork(ThrowableFunction<StatementExecutor, T> func) throws Throwable {
+        final Throwable[] primaryHolder = new Throwable[1];
         try {
             return transactionTemplate.execute(status -> {
                 try (final StatementExecutor statementExecutor = new StatementExecutor(jdbcTemplate)) {
                     return func.throwableApply(statementExecutor);
-                } catch (Throwable ex) {
-                    throw new CallbackFailure(ex);
+                } catch (Throwable primary) {
+                    primaryHolder[0] = primary;
+                    throw new CallbackFailure(primary);
                 }
             });
         } catch (CallbackFailure ex) {
             throw ex.getCause();
+        } catch (Throwable transactionFailure) {
+            throw rollbackFailureAsSuppressed(primaryHolder[0], transactionFailure);
         }
     }
 
     @Override
     protected void __doWork(ThrowableVoidFunction<StatementExecutor> func) throws Throwable {
+        final Throwable[] primaryHolder = new Throwable[1];
         try {
             transactionTemplate.executeWithoutResult(status -> {
                 try (final StatementExecutor statementExecutor = new StatementExecutor(jdbcTemplate)) {
                     func.throwableVoidApply(statementExecutor);
-                } catch (Throwable ex) {
-                    throw new CallbackFailure(ex);
+                } catch (Throwable primary) {
+                    primaryHolder[0] = primary;
+                    throw new CallbackFailure(primary);
                 }
             });
         } catch (CallbackFailure ex) {
             throw ex.getCause();
+        } catch (Throwable transactionFailure) {
+            throw rollbackFailureAsSuppressed(primaryHolder[0], transactionFailure);
         }
+    }
+
+    private static Throwable rollbackFailureAsSuppressed(Throwable primary, Throwable transactionFailure) {
+        if (null == primary) {
+            // The callback completed; this is a commit or lifecycle failure.
+            return transactionFailure;
+        }
+        if (primary != transactionFailure) {
+            primary.addSuppressed(transactionFailure);
+        }
+        return primary;
     }
 
     private static final class CallbackFailure extends RuntimeException {

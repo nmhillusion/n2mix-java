@@ -24,7 +24,11 @@ import static tech.nmhillusion.n2mix.util.ExceptionUtil.getExceptionFromStacktra
  * by this executor is closed before the executor method returns, regardless of whether the
  * callback completes normally or throws. Consequently, a callback must not leak the statement,
  * any {@link java.sql.ResultSet} derived from it, or any {@link java.sql.Blob}/{@link java.sql.Clob}
- * stream outside the callback — those resources are only valid inside the callback.
+ * stream outside the callback — those resources are only valid inside the callback.</p>
+ *
+ * <p><b>Session ownership.</b> A {@link Session} passed to the constructor is borrowed, not owned:
+ * {@link #close()} only marks this executor as closed and never closes that session. The caller, or
+ * the executor that created it, remains responsible for closing it.</p>
  *
  * <p>created by: nmhillusion
  * <p>

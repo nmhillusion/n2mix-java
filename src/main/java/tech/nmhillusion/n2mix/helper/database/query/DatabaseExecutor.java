@@ -8,14 +8,20 @@ import static tech.nmhillusion.n2mix.helper.log.LogHelper.getLogger;
 /**
  * Base class of the database executors.
  *
- * <p><b>Transaction contract.</b> One {@code doWork} / {@code doReturningWork} call is one unit of
+ * <p><b>Transaction contract.</b> A call that does not join an outer transaction is one unit of
  * work: the executor begins a transaction, commits when the callback completes normally, and rolls
- * back when the callback throws. A rollback failure is attached to the original throwable as a
- * suppressed exception instead of replacing it.</p>
+ * back when the callback throws. The throwable raised by the callback is always rethrown; a failure
+ * while rolling back that call is attached to it as a suppressed exception instead of replacing it.
+ * A failure of the commit itself is reported as the backend's commit exception.</p>
  *
- * <p>A call does not join an ambient Hibernate transaction. The JDBC implementation joins a Spring
- * transaction bound to the same {@code DataSource} (propagation {@code REQUIRED}), because its
- * transaction is created through Spring's {@code TransactionTemplate}.</p>
+ * <p><b>Ambient transactions.</b> A call does not join an ambient Hibernate transaction: the
+ * Hibernate implementation always opens its own {@code Session}, and therefore its own database
+ * connection, even when the caller is already inside a Spring transaction. The JDBC implementation
+ * joins an existing Spring transaction bound to the same {@code DataSource} (propagation
+ * {@code REQUIRED}); a failing call marks that shared transaction rollback-only, so the outer
+ * transaction cannot commit and throws {@code UnexpectedRollbackException}. Isolation and
+ * auto-commit are whatever the {@code DataSource} and driver default to; the executors do not
+ * override them.</p>
  *
  * <p>date: 2023-06-03
  * <p>

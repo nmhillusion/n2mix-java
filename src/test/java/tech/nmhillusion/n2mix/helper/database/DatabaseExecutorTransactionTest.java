@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -174,5 +175,138 @@ class DatabaseExecutorTransactionTest {
         }));
 
         assertEquals(0, countRows(), "the inner failure must mark the shared transaction rollback-only");
+    }
+
+    private static void insertUnchecked(final DatabaseExecutor executor, final int id) {
+        try {
+            insert(executor, id);
+        } catch (Throwable throwable) {
+            throw new IllegalStateException(throwable);
+        }
+    }
+
+    @Test
+    void jdbcReturningWorkCommitsAndReturnsTheCallbackResult() throws Throwable {
+        final DatabaseExecutor executor = new JdbcTemplateDatabaseExecutor(dataSource);
+
+        final Integer result = executor.doReturningWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            return 42;
+        });
+
+        assertEquals(42, result);
+        assertEquals(1, countRows(), "the insert must be committed");
+    }
+
+    @Test
+    void hibernateReturningWorkCommitsAndReturnsTheCallbackResult() throws Throwable {
+        final DatabaseExecutor executor = new HibernateSessionDatabaseExecutor(sessionFactory);
+
+        final Integer result = executor.doReturningWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            return 42;
+        });
+
+        assertEquals(42, result);
+        assertEquals(1, countRows(), "the insert must be committed");
+    }
+
+    @Test
+    void jdbcReturningWorkRollsBackWhenTheCallbackFails() {
+        final DatabaseExecutor executor = new JdbcTemplateDatabaseExecutor(dataSource);
+        final SQLException marker = new SQLException("boom", "42000", 1);
+
+        final Throwable thrown = assertThrows(Throwable.class, () -> executor.doReturningWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            throw marker;
+        }));
+
+        assertTrue(isCausedBy(thrown, marker), "the original failure must stay in the cause chain");
+        assertEquals(0, countRows(), "the insert must be rolled back");
+    }
+
+    @Test
+    void hibernateReturningWorkRollsBackWhenTheCallbackFails() {
+        final DatabaseExecutor executor = new HibernateSessionDatabaseExecutor(sessionFactory);
+        final SQLException marker = new SQLException("boom", "42000", 1);
+
+        final Throwable thrown = assertThrows(Throwable.class, () -> executor.doReturningWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            throw marker;
+        }));
+
+        assertTrue(isCausedBy(thrown, marker), "the original failure must stay in the cause chain");
+        assertEquals(0, countRows(), "the insert must be rolled back");
+    }
+
+    @Test
+    void jdbcRollsBackAndPropagatesAnError() {
+        final DatabaseExecutor executor = new JdbcTemplateDatabaseExecutor(dataSource);
+        final AssertionError marker = new AssertionError("boom");
+
+        final Throwable thrown = assertThrows(Throwable.class, () -> executor.doWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            throw marker;
+        }));
+
+        assertSame(marker, thrown, "an Error must propagate unchanged");
+        assertEquals(0, countRows(), "the insert must be rolled back");
+    }
+
+    @Test
+    void hibernateRollsBackAndPropagatesAnError() {
+        final DatabaseExecutor executor = new HibernateSessionDatabaseExecutor(sessionFactory);
+        final AssertionError marker = new AssertionError("boom");
+
+        final Throwable thrown = assertThrows(Throwable.class, () -> executor.doWork(statementExecutor -> {
+            statementExecutor.doPreparedStatement(
+                    "insert into " + TABLE + "(id) values (1)",
+                    preparedStatement -> preparedStatement.execute());
+            throw marker;
+        }));
+
+        assertSame(marker, thrown, "an Error must propagate unchanged");
+        assertEquals(0, countRows(), "the insert must be rolled back");
+    }
+
+    @Test
+    void jdbcJoinsAnOuterSpringTransactionAndCommitsWithIt() {
+        final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        final TransactionTemplate outerTransaction =
+                new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+
+        outerTransaction.executeWithoutResult(status -> {
+            jdbcTemplate.update("insert into " + TABLE + "(id) values (1)");
+
+            final DatabaseExecutor executor = new JdbcTemplateDatabaseExecutor(dataSource);
+            insertUnchecked(executor, 2);
+        });
+
+        assertEquals(2, countRows(), "the inner work must commit together with the outer transaction");
+    }
+
+    @Test
+    void hibernateWorkDoesNotJoinAnOuterSpringTransaction() {
+        final TransactionTemplate outerTransaction =
+                new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+        final DatabaseExecutor executor = new HibernateSessionDatabaseExecutor(sessionFactory);
+
+        assertThrows(IllegalStateException.class, () -> outerTransaction.executeWithoutResult(status -> {
+            insertUnchecked(executor, 1);
+
+            throw new IllegalStateException("roll back the outer transaction");
+        }));
+
+        assertEquals(1, countRows(), "the Hibernate insert must commit independently of the outer transaction");
     }
 }
