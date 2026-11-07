@@ -10,26 +10,41 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public abstract class ExceptionUtil {
     private final static Pattern USER_ERROR_PATTERN = Pattern.compile("ORA-20\\d{3}:.*?", Pattern.DOTALL | Pattern.MULTILINE);
 
-    public static Throwable getFurthestGeneralException(final Throwable ex) {
+    private static <T extends Throwable> T traverseCauseChain(Throwable ex, Class<T> classToFind) {
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (classToFind.isInstance(cause)) {
+                return CastUtil.safeCast(cause, classToFind);
+            }
+            cause = cause.getCause();
+        }
+        return null;
+    }
+
+    public static Throwable unwrapAppRuntimeException(final Throwable ex) {
         Throwable finalException = ex;
 
         if (null == finalException) {
             finalException = new GeneralException("Exception is null");
         }
 
-        while (finalException.getCause() instanceof AppRuntimeException) {
-            finalException = finalException.getCause();
+        while (finalException instanceof AppRuntimeException) {
+            if (Objects.nonNull(finalException.getCause())) {
+                finalException = finalException.getCause();
+            }
         }
+
         return finalException;
     }
 
     public static AppRuntimeException throwException(final Throwable ex) {
-        final Throwable finalException = getFurthestGeneralException(ex);
+        final Throwable finalException = unwrapAppRuntimeException(ex);
 
         if (finalException instanceof SQLException) {
             return throwParsedSqlException(finalException);
@@ -63,7 +78,7 @@ public abstract class ExceptionUtil {
             }
             return new AppRuntimeException(message.trim(), ex);
         } else {
-            final Throwable finalException = getFurthestGeneralException(ex);
+            final Throwable finalException = unwrapAppRuntimeException(ex);
 
             if (finalException instanceof AppRuntimeException) {
                 return (AppRuntimeException) finalException;
@@ -88,15 +103,28 @@ public abstract class ExceptionUtil {
     }
 
     public static <T extends Throwable> T getExceptionFromStacktrace(Throwable ex, Class<T> classExceptionToFind, T defaultValueIfNotFound) {
+        // Handle null input
+        if (ex == null) {
+            return defaultValueIfNotFound;
+        }
+
+        // Check the exception itself
         if (classExceptionToFind.isInstance(ex)) {
             return CastUtil.safeCast(ex, classExceptionToFind);
         }
 
+        // Check suppressed exceptions
         final Throwable[] suppressedList = ex.getSuppressed();
         for (Throwable throwable_ : suppressedList) {
             if (classExceptionToFind.isInstance(throwable_)) {
                 return CastUtil.safeCast(throwable_, classExceptionToFind);
             }
+        }
+
+        // Traverse the cause chain using shared helper
+        T foundInCause = traverseCauseChain(ex, classExceptionToFind);
+        if (foundInCause != null) {
+            return foundInCause;
         }
 
         return defaultValueIfNotFound;

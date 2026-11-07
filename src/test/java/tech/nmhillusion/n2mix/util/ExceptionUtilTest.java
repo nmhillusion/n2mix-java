@@ -67,4 +67,79 @@ class ExceptionUtilTest {
             getLogger(this).error(ex);
         }
     }
+
+    @Test
+    void getExceptionFromStacktrace_directMatch() {
+        final SQLException sqlException = new SQLException("Direct SQL error");
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(sqlException, SQLException.class, null);
+        Assertions.assertSame(sqlException, found);
+    }
+
+    @Test
+    void getExceptionFromStacktrace_wrappedByOneLevel() {
+        final SQLException sqlException = new SQLException("Wrapped SQL error", "23505", 1);
+        final RuntimeException wrapper = new RuntimeException(sqlException);
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(wrapper, SQLException.class, null);
+        Assertions.assertSame(sqlException, found);
+        Assertions.assertEquals("23505", found.getSQLState());
+        Assertions.assertEquals(1, found.getErrorCode());
+    }
+
+    @Test
+    void getExceptionFromStacktrace_deeplyNestedCauseChain() {
+        final SQLException sqlException = new SQLException("Deep nested SQL error", "23000", 2291);
+        final RuntimeException inner = new RuntimeException(sqlException);
+        final RuntimeException middle = new RuntimeException(inner);
+        final RuntimeException outer = new RuntimeException(middle);
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(outer, SQLException.class, null);
+        Assertions.assertSame(sqlException, found);
+        Assertions.assertEquals("23000", found.getSQLState());
+        Assertions.assertEquals(2291, found.getErrorCode());
+    }
+
+    @Test
+    void getExceptionFromStacktrace_suppressedException() {
+        final SQLException sqlException = new SQLException("Suppressed SQL error");
+        final RuntimeException main = new RuntimeException("Main error");
+        main.addSuppressed(sqlException);
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(main, SQLException.class, null);
+        Assertions.assertSame(sqlException, found);
+    }
+
+    @Test
+    void getExceptionFromStacktrace_notFoundReturnsDefault() {
+        final RuntimeException ex = new RuntimeException("No SQL here");
+        final SQLException defaultValue = new SQLException("Default fallback");
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(ex, SQLException.class, defaultValue);
+        Assertions.assertSame(defaultValue, found);
+    }
+
+    @Test
+    void getExceptionFromStacktrace_hibernateStyleWrapping() {
+        // Simulates HibernateException -> JDBCException -> SQLException chain
+        final SQLException sqlException = new SQLException("ORA-00001: unique constraint violated", "23000", 1);
+        final RuntimeException jdbcException = new RuntimeException("Could not execute statement", sqlException);
+        final RuntimeException hibernateException = new RuntimeException("Hibernate operation failed", jdbcException);
+
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(hibernateException, SQLException.class, null);
+        Assertions.assertSame(sqlException, found);
+        Assertions.assertEquals("23000", found.getSQLState());
+        Assertions.assertEquals(1, found.getErrorCode());
+        Assertions.assertTrue(found.getMessage().contains("ORA-00001"));
+    }
+
+    @Test
+    void getExceptionFromStacktrace_nullCause() {
+        final RuntimeException ex = new RuntimeException("No cause");
+        final SQLException defaultValue = new SQLException("Default");
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(ex, SQLException.class, defaultValue);
+        Assertions.assertSame(defaultValue, found);
+    }
+
+    @Test
+    void getExceptionFromStacktrace_nullException() {
+        final SQLException defaultValue = new SQLException("Default");
+        final SQLException found = ExceptionUtil.getExceptionFromStacktrace(null, SQLException.class, defaultValue);
+        Assertions.assertSame(defaultValue, found);
+    }
 }
